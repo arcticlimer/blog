@@ -5,3 +5,4 @@ language = "en"
 multilingual = false
 src = "notes"
 title = "My blog"
+backlinks-header = "Backlinks"

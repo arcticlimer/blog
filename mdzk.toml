@@ -1,0 +1,7 @@
+[mdzk]
+authors = ["Vinícius Müller"]
+ignore = []
+language = "en"
+multilingual = false
+src = "notes"
+title = "My mdzk"

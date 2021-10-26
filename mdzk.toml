@@ -6,3 +6,7 @@ multilingual = false
 src = "notes"
 title = "My blog"
 backlinks-header = "Backlinks"
+
+[build]
+create-missing = false
+build-dir = "book"

@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Elegant remappings with KMonad - My blog</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><div><strong aria-hidden="true">1.</strong> ❄️ NixOS</div></li><li><ol class="section"><li class="chapter-item expanded "><a href="../❄️ NixOS/Elegant remappings with KMonad.html" class="active"><strong aria-hidden="true">1.1.</strong> Elegant remappings with KMonad</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">2.</strong> Introduction</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">My blog</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js" integrity="sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+          ],
+          throwOnError : false
+        });
+    });
+</script>
+# Intro
+I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
+failing to achieve my goals with `xmodmap` and others, I was sure there had to
+be a better solution, and then I've found KMonad.
+<h1 id="what-is-kmonad"><a class="header" href="#what-is-kmonad">What is KMonad?</a></h1>
+<p>KMonad is a multiplatform key remapping software which uses a lisp-like
+declarative configuration language.</p>
+<h1 id="why-use-kmonad"><a class="header" href="#why-use-kmonad">Why use KMonad?</a></h1>
+<p>Once you get used to it, KMonad provides a pretty stable experience and a sweet
+way to configure your key remappings.</p>
+<h2 id="pros"><a class="header" href="#pros">Pros</a></h2>
+<ul>
+<li>It works in a system-wide manner, so it doesn't matter whether you are inside
+a TTY rescuing your computer or relaxing inside your X session, your
+key remappings will work.</li>
+<li>It's pretty easy to define configurations for multiple keyboards and switch
+between them.</li>
+<li>It works. Seriously. I cannot stress this enough, I've spent a lot of time
+using programs to detect the keycodes that my keyboard was emitting and
+writing some cryptic commands inside <code>xmodmap</code>'s <code>.xkb</code> files (and guess what,
+it didn't worked). With KMonad I literally draw my keyboard in ASCII
+and change the characters' placement. And it works.</li>
+<li>It supports some fancy stuff such as macros, layers, composite characters, the
+ability to run shell commands when pressing a key, etc...</li>
+</ul>
+<h2 id="cons"><a class="header" href="#cons">Cons</a></h2>
+<ul>
+<li>It has a steep learning curve, and you probably will need to read their ~1000
+lines lisp-like file tutorial to start using it.</li>
+<li>You still need to change a few lines in your configuration files in order to
+make them run in another platform.</li>
+</ul>
+<h1 id="using-kmonad-with-nixos"><a class="header" href="#using-kmonad-with-nixos">Using KMonad with NixOS</a></h1>
+<p>Since KMonad is still not available directly into NixOS as a system module, the
+current way to use KMonad is through <a href="https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos">their own NixOS module</a>.</p>
+<h2 id="the-nix-derivation"><a class="header" href="#the-nix-derivation">The Nix Derivation</a></h2>
+<p>With these settings, KMonad should already start along with your NixOS system.</p>
+<pre><code class="language-nix">{ pkgs, ... }:
+
+let
+  # The KMonad derivation (binary)
+  kmonad = (import ../../pkgs/kmonad/derivation.nix) pkgs;
+in
+{
+  imports = [
+    # The KMonad NixOS module
+    ./kmonad.nix
+  ];
+
+  services.kmonad = {
+    enable = true;
+    configfiles = [ ../../pkgs/kmonad/configs/ck61.kbd ];
+    package = kmonad;
+  };
+
+  services.xserver = {
+    xkbOptions = &quot;compose:ralt&quot;;
+    layout = &quot;us&quot;;
+  };
+
+  users.extraUsers.vini = {
+    extraGroups = [ &quot;input&quot; &quot;uinput&quot; ];
+  };
+}
+</code></pre>
+<p>For more details about this Nix snippet, check the KMonad section about Nix and
+the docs of their NixOS module.</p>
+<h2 id="the-kmonad-config"><a class="header" href="#the-kmonad-config">The KMonad Config</a></h2>
+<p>My current keyboard is a <code>Motospeed CK61</code>. It has a pretty good quality, but a
+terrible usability. It has a confusing layer system, which kills any possibility
+of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
+or <code>F1-F12</code> keys quickly. Also, it doesn't have the tilde (yes, you've read that
+right, there is not way to make a beautiful <code>~</code> by pressing a key). I mostly use
+KMonad to fix those keyboard quirks, this is a relevant part of my current configuration:</p>
+<pre><code class="language-lisp">(defsrc
+  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt cmp  rctl
+)
+
+(deflayer base
+  grv   _    _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _    _    _
+  esc   _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _
+  lmet  lctl _              _              lalt rctl @ext
+)
+
+(deflayer extra
+  _    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  _
+  _    _    up   _    _    _    _    _    _    _    _    ssrq @pau _
+  _    left down rght _    _    _    _    ins  home pgup pgdn _
+  _    _    _    _    _    _    _    _    del  end  _    @mat
+  _    _    _              _              _    _    @bas
+)
+</code></pre>
+<p>You can see how I use it to create a new layer to make arrows and others usable,
+turn <code>right-alt</code> into <code>left-alt</code> (<code>ralt</code> does not behave correctly when using
+the <code>us(intl)</code> layout), change <code>ctrl</code> keys position, turn <code>caps lock</code> into <code>esc</code>
+add the tilde (grv) in place of the original <code>esc</code>.</p>
+<h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
+<ul>
+<li><a href="https://github.com/kmonad/kmonad">KMonad's GitHub Page</a></li>
+<li><a href="https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd">KMonad's Tutorial</a></li>
+<li><a href="https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd">My KMonad configuration</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="next" href="../index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="next" href="../index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

@@ -77,7 +77,7 @@ terrible usability. It has a confusing layer system, which kills any possibility
 of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
 or `F1-F12` keys quickly. Also, it doesn't have the tilde (yes, you've read that
 right, there is not way to make a beautiful `~` by pressing a key). I mostly use
-KMonad to fix those keyboard quirks, this is a relevant part of my current configuration:
+KMonad to fix these keyboard quirks, this is a relevant part of my current configuration:
 
 ```lisp
 (defsrc
@@ -108,7 +108,7 @@ KMonad to fix those keyboard quirks, this is a relevant part of my current confi
 You can see how I use it to create a new layer to make arrows and others usable,
 turn `right-alt` into `left-alt` (`ralt` does not behave correctly when using
 the `us(intl)` layout), change `ctrl` keys position, turn `caps lock` into `esc`
-add the tilde (grv) in place of the original `esc`.
+and add the tilde (grv) in place of the original `esc`.
 
 # Resources
 - [KMonad's GitHub Page](https://github.com/kmonad/kmonad)

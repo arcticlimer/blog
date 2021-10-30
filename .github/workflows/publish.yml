@@ -16,9 +16,10 @@ jobs:
         uses: cachix/install-nix-action@v11
         with:
           install_url: https://github.com/numtide/nix-unstable-installer/releases/download/nix-2.5pre20211019_4a2b7cc/install
-          # Configure Nix to enable flakes
           extra_nix_config: |
             experimental-features = nix-command flakes
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
       - name: Build 🔧
         run: |

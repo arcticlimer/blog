@@ -10,3 +10,17 @@ backlinks-header = "Backlinks"
 [build]
 create-missing = false
 build-dir = "book"
+
+[output.html]
+no-section-label = true
+
+[output.html.print]
+enable = false
+
+[output.html.fold]
+enable = true
+level = 1
+
+#[preprocessor.toc]
+#command = "mdbook-toc"
+#renderer = ["html"]

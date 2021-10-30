@@ -1,3 +1,19 @@
+---
+date: 2021-10-27T16:47
+---
+
+# Table of Contents
+<!-- toc -->
+- [Intro](#intro)
+  * [Author's Setup](#author-s-setup)
+- [NixOS Configuration](#nixos-configuration)
+  * [Offload Script](#offload-script)
+    + [Examples](#examples)
+  * [XServer Configuration](#xserver-configuration)
+  * [NVIDIA + PRIME Configuration](#nvidia---prime-configuration)
+- [Conclusion](#conclusion)
+- [Resources](#resources)
+
 # Intro
 I've spent some time trying to setup hybrid graphics on NixOS and managed to get
 it up and running after adapting some of the content available at the NixOS Wiki.
@@ -6,10 +22,10 @@ it working.
 
 ## Author's Setup
 The relevant setup for this post includes:
-- OS: NixOS 21.11 Porcupine
-- CPU: Intel i7-7700
-- GPU: NVIDIA GTX 1070
-- iGPU: Intel HD Graphics 630
+- OS: `NixOS 21.11 Porcupine`
+- CPU: `Intel i7-7700`
+- GPU: `NVIDIA GTX 1070`
+- iGPU: `Intel HD Graphics 630`
 
 > Note: I have not tested this in other machines, maybe some changes will be
 > necessary for this to run in other kinds of hardware.
@@ -145,9 +161,9 @@ Below is the NVIDIA PRIME configuration, in which we must enable `offload` and
 the both the `nvidiaBusId` and `intelBusId` of our GPUs. You can find out how to
 get the bus ids by reading this [relevant part of the NixOS Wiki](https://nixos.wiki/wiki/Nvidia#lspci).
 
-> Note: In my system, I had to go to my BIOS settings and change the computer
-> graphics to `IGFX` (Integrated Graphics) instead of directly using the PCIE
-> slot, otherwise my system wouldn't detect the Intel HD device.
+> Note: In my system, I had to go to my BIOS settings and change the default
+> display output to `IGFX` (Integrated Graphics) instead of directly using the
+> PCIE slot, otherwise my system wouldn't detect the Intel HD device.
 
 # Conclusion
 After some tries I could get hybrid graphics working on NixOS in a quite easy

@@ -1,3 +1,19 @@
+---
+date: 2021-10-26T14:15
+---
+
+# Table of Contents
+<!-- toc -->
+- [Intro](#intro)
+- [What is KMonad?](#what-is-kmonad-)
+- [Why use KMonad?](#why-use-kmonad-)
+  * [Pros](#pros)
+  * [Cons](#cons)
+- [Using KMonad with NixOS](#using-kmonad-with-nixos)
+  * [The Nix Derivation](#the-nix-derivation)
+  * [The KMonad Config](#the-kmonad-config)
+- [Resources](#resources)
+
 # Intro
 I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
 failing to achieve my goals with `xmodmap` and others, I was sure there had to

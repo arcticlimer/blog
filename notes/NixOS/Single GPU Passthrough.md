@@ -321,7 +321,7 @@ use your GPU, but it probably doesn't have any sound output.
       ExecStart = "${pkgs.scream}/bin/scream -o pulse -i virbr0";
       Restart = "always";
     };
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [ "default.target" ];
     requires = [ "pipewire.service" ]; # Change to pulseaudio.service if using it
   };
   ```
@@ -362,7 +362,7 @@ You should now be able to hear the guest's audio on your host.
         ExecStart = "${pkgs.scream}/bin/scream -o pulse -m /dev/shm/scream";
         Restart = "always";
       };
-      wantedBy = [ "multi-user.target" ];
+      wantedBy = [ "default.target" ];
       requires = [ "pipewire.service" ]; # Change to pulseaudio.service if using it
     };
     ```
@@ -498,7 +498,7 @@ in
       ExecStart = "${pkgs.scream}/bin/scream -o pulse -i virbr0";
       Restart = "always";
     };
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [ "default.target" ];
     requires = [ "pipewire.service" ];
   };
 

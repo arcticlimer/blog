@@ -31,6 +31,19 @@
             mdbook-toc
           ];
         };
+        defaultPackage = pkgs.stdenv.mkDerivation {
+          name = "personal-notes";
+          src = ./.;
+          buildPhase = "mdzk build";
+          installPhase = ''
+            mkdir -p $out/book
+            cp -r ./book/* $out/book
+          '';
+          buildInputs = [
+            mdzk-bin 
+            mdbook-toc
+          ];
+        };
       }
     );
 }

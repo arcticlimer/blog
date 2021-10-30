@@ -1,5 +1,6 @@
 ---
 date: 2021-10-29T21:01
+title: KVM GPU Passthrough
 ---
 
 # Table of Contents
@@ -22,25 +23,26 @@ date: 2021-10-29T21:01
   * [IVSHMEM Support](#ivshmem-support)
   * [KMonad Support](#kmonad-support)
   * [Audio Support](#audio-support)
-    + [Scream + Bridged Network](#scream---bridged-network)
+    + [Scream + Bridged Network](#scream--bridged-network)
       - [Host Setup](#host-setup)
       - [Guest Setup](#guest-setup)
-    + [Scream + IVSHMEM](#scream---ivshmem)
+    + [Scream + IVSHMEM](#scream--ivshmem)
       - [Host Setup](#host-setup-1)
       - [Guest Setup](#guest-setup-1)
   * [Video support](#video-support)
     + [Looking Glass](#looking-glass)
       - [Host Setup](#host-setup-2)
-      - [Windows Box Setup](#windows-box-setup)
+      - [Guest Setup](#guest-setup-2)
 - [Conclusion](#conclusion)
 - [Resources](#resources)
 
 # Intro
 Recently I wanted to run a Windows virtual machine from NixOS that has access to
-my GPU, mostly for gaming. This post will cover from enabling the necessary BIOS
-options and crafting a NixOS configuration to setting a Windows VM up and
-making it able to use the GPU.
-> Note: This post is heavily based in [this Arch Wiki article]() and is made
+my GPU, mostly for gaming. This post will cover from enabling the necessary
+kernel options and crafting a NixOS configuration to setting a Windows VM up and
+making it able to use the GPU and other peripherals.
+
+> Note: This post is heavily based in [this Arch Wiki article](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF) and is made
 > mostly as a guide to the author itself, although it is supposed to help any
 > people with a similar hardware setup trying to GPU passthrough on NixOS.
 
@@ -191,7 +193,8 @@ environment.systemPackages = with pkgs; [
 - Inside the **CPUs** section, change the CPU model to **host-passthrough** (if it's
   not being shown uncheck **Copy host CPU configuration**).
 - Don't add the PCI device yet, just start the Windows ISO and install it
-  through the virt-viewer screen.
+  through the `virt-viewer` screen.
+- After a successful installation, shut down the box and proceed.
 
 > Note: If you fall inside an "UEFI Shell" when starting the VM for
 > installation, just type exit, navigate to **Boot Manager** and boot into the
@@ -217,7 +220,7 @@ environment.systemPackages = with pkgs; [
     ...
   </video>
   ```
-- Avoid virtualization detection:
+- Add this to avoid virtualization detection:
   ```xml
   <features>
     <hyperv>
@@ -237,13 +240,13 @@ environment.systemPackages = with pkgs; [
   boring black screen. These snippets help to avoid this problem.
 
 - In the box's details, click **Add Hardware**.
-- Add all the devices that are in the same **IOMMU** group of your GPU.
+- Add all the devices that are in the same [**IOMMU**](#enabling-iommu) group of your GPU.
 - You should now be able to start your box and change your monitor input to the
   GPU output to check if it's working. You should see your Windows box normally
   on your screen.
 
 ## Keyboard/Mouse support
-Add to your box configuration:
+Add to your box configuration, inside the `<devices>` section:
 ```xml
 <input type="evdev">
   <source dev="/dev/input/by-id/your-mouse-here" />
@@ -269,7 +272,7 @@ same time.
 ## IVSHMEM Support
 > Note: This section is only useful if you are going to use either [Scream with IVSHMEM](#scream--ivshmem) or [Looking Glass](#looking-glass).
 
-- Inside your Windows box's **Device Manager**, select **PCI standard RAM Controller**, and update it with [RedHat's IVSHMEM drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/) (preferentially v0.1-161+).
+- Inside your Windows box's **Device Manager**, go to **System Devices** and select **PCI standard RAM Controller**, then update it with [RedHat's IVSHMEM drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/) (preferentially v0.1-161+).
 
 ## KMonad Support
 
@@ -330,11 +333,15 @@ use your GPU, but it probably doesn't have any sound output.
 #### Guest Setup
 - Download and install [VirtIO drivers](https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/#virtio-win-direct-downloads) ([virtio-win-iso](https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md)).
 - Download and Install [Scream](https://github.com/duncanthrax/scream/releases/).
-
-> Note: If you previously had setup [Scream with IVSHMEM](#scream--ivshmem),
-> remember to remove the registry entry that makes Scream use IVSHMEM.
+  > Note: If you previously had setup [Scream with IVSHMEM](#scream--ivshmem),
+  > remember to remove the registry entry that makes Scream use IVSHMEM.
 
 You should now be able to hear the guest's audio on your host.
+
+> Note: For some reason, even though the `scream-network` unit is running, the
+> box doesn't output any sound until I restart the unit.
+> If that also happens to you, you can do so with: `systemctl --user restart
+> scream-network.service`.
 
 <!-- TODO: Install VirtIO drivers on guest and try again to make scream work via network -->
 ### Scream + IVSHMEM
@@ -352,7 +359,7 @@ You should now be able to hear the guest's audio on your host.
 
     # Scream
     systemd.tmpfiles.rules = [
-      "f /dev/shm/scream 0660 your-username-here qemu-libvirtd -"
+      "f /dev/shm/scream 0660 YOUR-USERNAME-HERE qemu-libvirtd -"
     ];
 
     systemd.user.services.scream-ivshmem = {
@@ -366,7 +373,7 @@ You should now be able to hear the guest's audio on your host.
       requires = [ "pipewire.service" ]; # Change to pulseaudio.service if using it
     };
     ```
-  - Add Scream's SHMEM configuration inside the `<devices>` section in the XML
+  - Add Scream's IVSHMEM configuration inside the `<devices>` section in the XML
     config:
     ```xml
     <shmem name="scream">
@@ -380,11 +387,14 @@ You should now be able to hear the guest's audio on your host.
 - Download and Install [Scream Drivers](https://github.com/duncanthrax/scream/releases).
 - To make the driver use **IVSHMEM**, run from an elevated shell: `REG ADD HKLM\SYSTEM\CurrentControlSet\Services\Scream\Options /v UseIVSHMEM /t REG_DWORD /d 2`.
 
+> Note: If your box's sound doesn't work and the `scream-ivshmem` unit is running,
+> check the note in end of the [Scream + Bridged Network](#scream--bridged-network).
+
 You should now be able to hear the guest's audio on your host.
 
 ## Video support
 ### Looking Glass
-Looking glass enables us to view our box graphical output from our XServer
+Looking Glass enables us to view our box graphical output from our XServer
 session.
 
 #### Host Setup
@@ -392,7 +402,7 @@ session.
 - Add this to your NixOS configuration:
   ```nix
   systemd.tmpfiles.rules = [
-    "f /dev/shm/looking-glass 0660 your-username-here qemu-libvirtd -"
+    "f /dev/shm/looking-glass 0660 YOUR-USERNAME-HERE qemu-libvirtd -"
   ];
 
   environment.systemPackages = with pkgs; [
@@ -401,8 +411,24 @@ session.
   ```
   Then rebuild your NixOS configuration and reboot the system.
 
-- Add this to your box's XML configuration:
+- Add Looking Glass' required configuration inside the `<devices>` section in the box's XML:
   ```xml
+  <!--
+  You only need to add `<graphics>` and `<video>` if you are going to use the
+  spice server.
+
+  If you prefer swapping your keyboard and mouse between your host and the VM, 
+  just don't add these two properties and lauch `looking-glass-client` with the 
+  `-s no` flag.
+  -->
+  <graphics type="spice" autoport="yes">
+    <listen type="address"/>
+  </graphics>
+  <video>
+    <model type="none"/>
+  </video>
+
+  <!-- Required -->
   <shmem name='looking-glass'>
     <model type='ivshmem-plain'/>
     <size unit='M'>32</size>
@@ -412,23 +438,27 @@ session.
   See [Looking Glass' documentation](https://looking-glass.io/docs/stable/install/#determining-memory) in order to calculate how much memory you should give to Looking Glass (although 32M should handle most of the cases).
 
 
-#### Windows Box Setup
+#### Guest Setup
 Inside your Windows box, you will need to:
 - [Add IVSHMEM support](#ivshmem-support).
 - [Download and install `Looking Glass (host)`](https://looking-glass.io/downloads).
 
+> Note: The version of both your Looking Glass client and host applications must match.
+
 # Conclusion
 While tinkering with and learning more about `VFIO` and `QEMU`/`libvirt`, I've
 managed to find an interesting virtual machine workflow:
-- Audio: Scream + Bridged Network
-- Video: I'm use both the native GPU output and Looking Glass, depending on what
+- Audio: Scream + Bridged Network.
+- Video: I'm using both the native GPU's output and Looking Glass, depending on what
   I'm doing.
 - Inputs: I'm using both my keyboard and mouse as `evdev` inputs, so I can swap
   between the bare metal and the virtual machine. I'm also using KMonad's output
   device as my keyboard device.
 
-The experience has been much greater than dual boot, since I can use both the
-OSses at the same time and don't need to waste time waiting for system reboots.
+The experience has been much greater than dual boot, since I can just open
+Looking Glass and use Windows as if it were just another workspace in my window
+manager. Now I can use both the OSses at the same time and don't need to waste time
+waiting for system reboots.
 
 I hope this post to be useful for whoever want to try a **virtual machine + GPU
 passthrough** workflow, be it another reader or myself trying to setup it again
@@ -482,10 +512,10 @@ in
     ACTION=="add", ATTRS{name}=="KMonad output", SYMLINK+="KMONAD_DEVICE"
   '';
 
-   services.pipewire = {
-     enable = true;
-     pulse.enable = true;
-   };
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+  };
 
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 ${username} qemu-libvirtd -"

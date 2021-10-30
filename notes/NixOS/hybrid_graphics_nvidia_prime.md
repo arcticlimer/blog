@@ -1,5 +1,6 @@
 ---
 date: 2021-10-27T16:47
+title: Hybrid Graphics with NVIDIA PRIME
 ---
 
 # Table of Contents
@@ -144,7 +145,7 @@ my graphics card, adding this extra piece of configuration solved it.
 
 ## NVIDIA + PRIME Configuration
 
-```nix 
+```nix
 services.xserver.videoDrivers = [ "nvidia" ];
 
 hardware.nvidia.prime = {

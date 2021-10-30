@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Single GPU Passthrough - My blog</title>
+        <title>KVM GPU Passthrough - My blog</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/Elegant remappings with KMonad.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/Hybrid Graphics with NVIDIA PRIME.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item expanded "><a href="../NixOS/Single GPU Passthrough.html" class="active">Single GPU Passthrough</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>Nix Flakes Cheat Sheet</div></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../NixOS/gpu_passthrough.html" class="active">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -176,13 +176,13 @@
 <li><a href="#kmonad-support">KMonad Support</a></li>
 <li><a href="#audio-support">Audio Support</a>
 <ul>
-<li><a href="#scream---bridged-network">Scream + Bridged Network</a>
+<li><a href="#scream--bridged-network">Scream + Bridged Network</a>
 <ul>
 <li><a href="#host-setup">Host Setup</a></li>
 <li><a href="#guest-setup">Guest Setup</a></li>
 </ul>
 </li>
-<li><a href="#scream---ivshmem">Scream + IVSHMEM</a>
+<li><a href="#scream--ivshmem">Scream + IVSHMEM</a>
 <ul>
 <li><a href="#host-setup-1">Host Setup</a></li>
 <li><a href="#guest-setup-1">Guest Setup</a></li>
@@ -195,7 +195,7 @@
 <li><a href="#looking-glass">Looking Glass</a>
 <ul>
 <li><a href="#host-setup-2">Host Setup</a></li>
-<li><a href="#windows-box-setup">Windows Box Setup</a></li>
+<li><a href="#guest-setup-2">Guest Setup</a></li>
 </ul>
 </li>
 </ul>
@@ -207,11 +207,11 @@
 </ul>
 <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
 <p>Recently I wanted to run a Windows virtual machine from NixOS that has access to
-my GPU, mostly for gaming. This post will cover from enabling the necessary BIOS
-options and crafting a NixOS configuration to setting a Windows VM up and
-making it able to use the GPU.</p>
+my GPU, mostly for gaming. This post will cover from enabling the necessary
+kernel options and crafting a NixOS configuration to setting a Windows VM up and
+making it able to use the GPU and other peripherals.</p>
 <blockquote>
-<p>Note: This post is heavily based in <a href="">this Arch Wiki article</a> and is made
+<p>Note: This post is heavily based in <a href="https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF">this Arch Wiki article</a> and is made
 mostly as a guide to the author itself, although it is supposed to help any
 people with a similar hardware setup trying to GPU passthrough on NixOS.</p>
 </blockquote>
@@ -354,7 +354,8 @@ check <strong>Customize before install</strong> and proceed.</li>
 <li>Inside the <strong>CPUs</strong> section, change the CPU model to <strong>host-passthrough</strong> (if it's
 not being shown uncheck <strong>Copy host CPU configuration</strong>).</li>
 <li>Don't add the PCI device yet, just start the Windows ISO and install it
-through the virt-viewer screen.</li>
+through the <code>virt-viewer</code> screen.</li>
+<li>After a successful installation, shut down the box and proceed.</li>
 </ul>
 <blockquote>
 <p>Note: If you fall inside an &quot;UEFI Shell&quot; when starting the VM for
@@ -383,7 +384,7 @@ desired device.</p>
 </code></pre>
 </li>
 <li>
-<p>Avoid virtualization detection:</p>
+<p>Add this to avoid virtualization detection:</p>
 <pre><code class="language-xml">&lt;features&gt;
   &lt;hyperv&gt;
     &lt;vendor_id state='on' value='randomid'/&gt;
@@ -404,7 +405,7 @@ boring black screen. These snippets help to avoid this problem.</p>
 <p>In the box's details, click <strong>Add Hardware</strong>.</p>
 </li>
 <li>
-<p>Add all the devices that are in the same <strong>IOMMU</strong> group of your GPU.</p>
+<p>Add all the devices that are in the same <a href="#enabling-iommu"><strong>IOMMU</strong></a> group of your GPU.</p>
 </li>
 <li>
 <p>You should now be able to start your box and change your monitor input to the
@@ -413,7 +414,7 @@ on your screen.</p>
 </li>
 </ul>
 <h2 id="keyboardmouse-support"><a class="header" href="#keyboardmouse-support">Keyboard/Mouse support</a></h2>
-<p>Add to your box configuration:</p>
+<p>Add to your box configuration, inside the <code>&lt;devices&gt;</code> section:</p>
 <pre><code class="language-xml">&lt;input type=&quot;evdev&quot;&gt;
   &lt;source dev=&quot;/dev/input/by-id/your-mouse-here&quot; /&gt;
 &lt;/input&gt;
@@ -439,10 +440,10 @@ same time.</p>
 <p>Note: This section is only useful if you are going to use either <a href="#scream--ivshmem">Scream with IVSHMEM</a> or <a href="#looking-glass">Looking Glass</a>.</p>
 </blockquote>
 <ul>
-<li>Inside your Windows box's <strong>Device Manager</strong>, select <strong>PCI standard RAM Controller</strong>, and update it with <a href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/">RedHat's IVSHMEM drivers</a> (preferentially v0.1-161+).</li>
+<li>Inside your Windows box's <strong>Device Manager</strong>, go to <strong>System Devices</strong> and select <strong>PCI standard RAM Controller</strong>, then update it with <a href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/">RedHat's IVSHMEM drivers</a> (preferentially v0.1-161+).</li>
 </ul>
 <h2 id="kmonad-support"><a class="header" href="#kmonad-support">KMonad Support</a></h2>
-<p>If you are using <a href="Elegant%20remappings%20with%20KMonad.html">KMonad</a>, you will notice
+<p>If you are using <a href="kmonad_remappings.html">KMonad</a>, you will notice
 that it grabs your keyboard's <code>udev</code> device and it won't output anything while
 KMonad is actively using this keyboard. We can work around this by symlinking
 the output device that KMonad creates into a known name that we can pass to our
@@ -489,13 +490,19 @@ Then rebuild your system.</li>
 <h4 id="guest-setup"><a class="header" href="#guest-setup">Guest Setup</a></h4>
 <ul>
 <li>Download and install <a href="https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/#virtio-win-direct-downloads">VirtIO drivers</a> (<a href="https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md">virtio-win-iso</a>).</li>
-<li>Download and Install <a href="https://github.com/duncanthrax/scream/releases/">Scream</a>.</li>
-</ul>
+<li>Download and Install <a href="https://github.com/duncanthrax/scream/releases/">Scream</a>.
 <blockquote>
 <p>Note: If you previously had setup <a href="#scream--ivshmem">Scream with IVSHMEM</a>,
 remember to remove the registry entry that makes Scream use IVSHMEM.</p>
 </blockquote>
+</li>
+</ul>
 <p>You should now be able to hear the guest's audio on your host.</p>
+<blockquote>
+<p>Note: For some reason, even though the <code>scream-network</code> unit is running, the
+box doesn't output any sound until I restart the unit.
+If that also happens to you, you can do so with: <code>systemctl --user restart scream-network.service</code>.</p>
+</blockquote>
 <!-- TODO: Install VirtIO drivers on guest and try again to make scream work via network -->
 <h3 id="scream--ivshmem"><a class="header" href="#scream--ivshmem">Scream + IVSHMEM</a></h3>
 <blockquote>
@@ -513,7 +520,7 @@ and probably will have more disadvantages than advantages.</p>
 
 # Scream
 systemd.tmpfiles.rules = [
-  &quot;f /dev/shm/scream 0660 your-username-here qemu-libvirtd -&quot;
+  &quot;f /dev/shm/scream 0660 YOUR-USERNAME-HERE qemu-libvirtd -&quot;
 ];
 
 systemd.user.services.scream-ivshmem = {
@@ -528,7 +535,7 @@ systemd.user.services.scream-ivshmem = {
 };
 </code></pre>
 </li>
-<li>Add Scream's SHMEM configuration inside the <code>&lt;devices&gt;</code> section in the XML
+<li>Add Scream's IVSHMEM configuration inside the <code>&lt;devices&gt;</code> section in the XML
 config:
 <pre><code class="language-xml">&lt;shmem name=&quot;scream&quot;&gt;
   &lt;model type=&quot;ivshmem-plain&quot;/&gt;
@@ -544,17 +551,21 @@ config:
 <li>Download and Install <a href="https://github.com/duncanthrax/scream/releases">Scream Drivers</a>.</li>
 <li>To make the driver use <strong>IVSHMEM</strong>, run from an elevated shell: <code>REG ADD HKLM\SYSTEM\CurrentControlSet\Services\Scream\Options /v UseIVSHMEM /t REG_DWORD /d 2</code>.</li>
 </ul>
+<blockquote>
+<p>Note: If your box's sound doesn't work and the <code>scream-ivshmem</code> unit is running,
+check the note in end of the <a href="#scream--bridged-network">Scream + Bridged Network</a>.</p>
+</blockquote>
 <p>You should now be able to hear the guest's audio on your host.</p>
 <h2 id="video-support"><a class="header" href="#video-support">Video support</a></h2>
 <h3 id="looking-glass"><a class="header" href="#looking-glass">Looking Glass</a></h3>
-<p>Looking glass enables us to view our box graphical output from our XServer
+<p>Looking Glass enables us to view our box graphical output from our XServer
 session.</p>
 <h4 id="host-setup-2"><a class="header" href="#host-setup-2">Host Setup</a></h4>
 <ul>
 <li>
 <p>Add this to your NixOS configuration:</p>
 <pre><code class="language-nix">systemd.tmpfiles.rules = [
-  &quot;f /dev/shm/looking-glass 0660 your-username-here qemu-libvirtd -&quot;
+  &quot;f /dev/shm/looking-glass 0660 YOUR-USERNAME-HERE qemu-libvirtd -&quot;
 ];
 
 environment.systemPackages = with pkgs; [
@@ -564,8 +575,24 @@ environment.systemPackages = with pkgs; [
 <p>Then rebuild your NixOS configuration and reboot the system.</p>
 </li>
 <li>
-<p>Add this to your box's XML configuration:</p>
-<pre><code class="language-xml">&lt;shmem name='looking-glass'&gt;
+<p>Add Looking Glass' required configuration inside the <code>&lt;devices&gt;</code> section in the box's XML:</p>
+<pre><code class="language-xml">&lt;!--
+You only need to add `&lt;graphics&gt;` and `&lt;video&gt;` if you are going to use the
+spice server.
+
+If you prefer swapping your keyboard and mouse between your host and the VM, 
+just don't add these two properties and lauch `looking-glass-client` with the 
+`-s no` flag.
+--&gt;
+&lt;graphics type=&quot;spice&quot; autoport=&quot;yes&quot;&gt;
+  &lt;listen type=&quot;address&quot;/&gt;
+&lt;/graphics&gt;
+&lt;video&gt;
+  &lt;model type=&quot;none&quot;/&gt;
+&lt;/video&gt;
+
+&lt;!-- Required --&gt;
+&lt;shmem name='looking-glass'&gt;
   &lt;model type='ivshmem-plain'/&gt;
   &lt;size unit='M'&gt;32&lt;/size&gt;
 &lt;/shmem&gt;
@@ -573,25 +600,30 @@ environment.systemPackages = with pkgs; [
 <p>See <a href="https://looking-glass.io/docs/stable/install/#determining-memory">Looking Glass' documentation</a> in order to calculate how much memory you should give to Looking Glass (although 32M should handle most of the cases).</p>
 </li>
 </ul>
-<h4 id="windows-box-setup"><a class="header" href="#windows-box-setup">Windows Box Setup</a></h4>
+<h4 id="guest-setup-2"><a class="header" href="#guest-setup-2">Guest Setup</a></h4>
 <p>Inside your Windows box, you will need to:</p>
 <ul>
 <li><a href="#ivshmem-support">Add IVSHMEM support</a>.</li>
 <li><a href="https://looking-glass.io/downloads">Download and install <code>Looking Glass (host)</code></a>.</li>
 </ul>
+<blockquote>
+<p>Note: The version of both your Looking Glass client and host applications must match.</p>
+</blockquote>
 <h1 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h1>
 <p>While tinkering with and learning more about <code>VFIO</code> and <code>QEMU</code>/<code>libvirt</code>, I've
 managed to find an interesting virtual machine workflow:</p>
 <ul>
-<li>Audio: Scream + Bridged Network</li>
-<li>Video: I'm use both the native GPU output and Looking Glass, depending on what
+<li>Audio: Scream + Bridged Network.</li>
+<li>Video: I'm using both the native GPU's output and Looking Glass, depending on what
 I'm doing.</li>
 <li>Inputs: I'm using both my keyboard and mouse as <code>evdev</code> inputs, so I can swap
 between the bare metal and the virtual machine. I'm also using KMonad's output
 device as my keyboard device.</li>
 </ul>
-<p>The experience has been much greater than dual boot, since I can use both the
-OSses at the same time and don't need to waste time waiting for system reboots.</p>
+<p>The experience has been much greater than dual boot, since I can just open
+Looking Glass and use Windows as if it were just another workspace in my window
+manager. Now I can use both the OSses at the same time and don't need to waste time
+waiting for system reboots.</p>
 <p>I hope this post to be useful for whoever want to try a <strong>virtual machine + GPU
 passthrough</strong> workflow, be it another reader or myself trying to setup it again
 after formatting the computer.</p>
@@ -641,10 +673,10 @@ in
     ACTION==&quot;add&quot;, ATTRS{name}==&quot;KMonad output&quot;, SYMLINK+=&quot;KMONAD_DEVICE&quot;
   '';
 
-   services.pipewire = {
-     enable = true;
-     pulse.enable = true;
-   };
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+  };
 
   systemd.tmpfiles.rules = [
     &quot;f /dev/shm/looking-glass 0660 ${username} qemu-libvirtd -&quot;
@@ -693,10 +725,7 @@ in
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../NixOS/Hybrid Graphics with NVIDIA PRIME.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <i class="fa fa-angle-left"></i>
-                            </a>
-                            <a rel="next" href="../index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -705,10 +734,7 @@ in
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../NixOS/Hybrid Graphics with NVIDIA PRIME.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
-                    </a>
-                    <a rel="next" href="../index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

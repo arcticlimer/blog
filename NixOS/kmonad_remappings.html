@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Hybrid Graphics with NVIDIA PRIME - My blog</title>
+        <title>Elegant remappings with KMonad - My blog</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/Elegant remappings with KMonad.html">Elegant remappings with KMonad</a></li><li class="chapter-item expanded "><a href="../NixOS/Hybrid Graphics with NVIDIA PRIME.html" class="active">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/Single GPU Passthrough.html">Single GPU Passthrough</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>Nix Flakes Cheat Sheet</div></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item expanded "><a href="../NixOS/kmonad_remappings.html" class="active">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -147,186 +147,140 @@
 <h1 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h1>
 <!-- toc -->
 <ul>
-<li><a href="#intro">Intro</a>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#what-is-kmonad-">What is KMonad?</a></li>
+<li><a href="#why-use-kmonad-">Why use KMonad?</a>
 <ul>
-<li><a href="#author-s-setup">Author's Setup</a></li>
+<li><a href="#pros">Pros</a></li>
+<li><a href="#cons">Cons</a></li>
 </ul>
 </li>
-<li><a href="#nixos-configuration">NixOS Configuration</a>
+<li><a href="#using-kmonad-with-nixos">Using KMonad with NixOS</a>
 <ul>
-<li><a href="#offload-script">Offload Script</a>
-<ul>
-<li><a href="#examples">Examples</a></li>
+<li><a href="#the-nix-derivation">The Nix Derivation</a></li>
+<li><a href="#the-kmonad-config">The KMonad Config</a></li>
 </ul>
 </li>
-<li><a href="#xserver-configuration">XServer Configuration</a></li>
-<li><a href="#nvidia---prime-configuration">NVIDIA + PRIME Configuration</a></li>
-</ul>
-</li>
-<li><a href="#conclusion">Conclusion</a></li>
 <li><a href="#resources">Resources</a></li>
 </ul>
 <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p>I've spent some time trying to setup hybrid graphics on NixOS and managed to get
-it up and running after adapting some of the content available at the NixOS Wiki.
-This post will go through the necessary changes that I had to do in order to get
-it working.</p>
-<h2 id="authors-setup"><a class="header" href="#authors-setup">Author's Setup</a></h2>
-<p>The relevant setup for this post includes:</p>
+<p>I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
+failing to achieve my goals with <code>xmodmap</code> and others, I was sure there had to
+be a better solution, and then I've found KMonad.</p>
+<h1 id="what-is-kmonad"><a class="header" href="#what-is-kmonad">What is KMonad?</a></h1>
+<p>KMonad is a multiplatform key remapping software which uses a lisp-like
+declarative configuration language.</p>
+<h1 id="why-use-kmonad"><a class="header" href="#why-use-kmonad">Why use KMonad?</a></h1>
+<p>Once you get used to it, KMonad provides a pretty stable experience and a sweet
+way to configure your key remappings.</p>
+<h2 id="pros"><a class="header" href="#pros">Pros</a></h2>
 <ul>
-<li>OS: <code>NixOS 21.11 Porcupine</code></li>
-<li>CPU: <code>Intel i7-7700</code></li>
-<li>GPU: <code>NVIDIA GTX 1070</code></li>
-<li>iGPU: <code>Intel HD Graphics 630</code></li>
+<li>It works in a system-wide manner, so it doesn't matter whether you are inside
+a TTY rescuing your computer or relaxing inside your X session, your
+key remappings will work.</li>
+<li>It's pretty easy to define configurations for multiple keyboards and switch
+between them.</li>
+<li>It works. Seriously. I cannot stress this enough, I've spent a lot of time
+using programs to detect the keycodes that my keyboard was emitting and
+writing some cryptic commands inside <code>xmodmap</code>'s <code>.xkb</code> files (and guess what,
+it didn't worked). With KMonad I literally draw my keyboard in ASCII
+and change the characters' placement. And it works.</li>
+<li>It supports some fancy stuff such as macros, layers, composite characters, the
+ability to run shell commands when pressing a key, etc...</li>
 </ul>
-<blockquote>
-<p>Note: I have not tested this in other machines, maybe some changes will be
-necessary for this to run in other kinds of hardware.</p>
-</blockquote>
-<h1 id="nixos-configuration"><a class="header" href="#nixos-configuration">NixOS Configuration</a></h1>
-<p>Below is the necessary NixOS configuration to get it up and running. The
-relevant parts will be covered next.</p>
-<pre><code class="language-nix">let
-  nvidia-offload = pkgs.writeShellScriptBin &quot;nvidia-offload&quot; ''
-    export __NV_PRIME_RENDER_OFFLOAD=1
-    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
-    export __VK_LAYER_NV_optimus=NVIDIA_only
-    exec -a &quot;$1&quot; &quot;$@&quot;
-  '';
+<h2 id="cons"><a class="header" href="#cons">Cons</a></h2>
+<ul>
+<li>It has a steep learning curve, and you probably will need to read their ~1000
+lines lisp-like file tutorial to start using it.</li>
+<li>You still need to change a few lines in your configuration files in order to
+make them run in another platform.</li>
+</ul>
+<h1 id="using-kmonad-with-nixos"><a class="header" href="#using-kmonad-with-nixos">Using KMonad with NixOS</a></h1>
+<p>Since KMonad is still not available directly into NixOS as a system module, the
+current way to use KMonad is through <a href="https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos">their own NixOS module</a>.</p>
+<h2 id="the-nix-derivation"><a class="header" href="#the-nix-derivation">The Nix Derivation</a></h2>
+<p>With these settings, KMonad should already start along with your NixOS system.</p>
+<pre><code class="language-nix">{ pkgs, ... }:
+
+let
+  # The KMonad derivation (binary)
+  kmonad = (import ../../pkgs/kmonad/derivation.nix) pkgs;
 in
 {
-  environment.systemPackages = [
-    nvidia-offload
+  imports = [
+    # The KMonad NixOS module
+    ./kmonad.nix
   ];
 
-  services.xserver.config = ''
-    # Integrated Intel GPU
-    Section &quot;Device&quot;
-      Identifier &quot;iGPU&quot;
-      Driver &quot;modesetting&quot;
-    EndSection
+  services.kmonad = {
+    enable = true;
+    configfiles = [ ../../pkgs/kmonad/configs/ck61.kbd ];
+    package = kmonad;
+  };
 
-    # Dedicated NVIDIA GPU
-    Section &quot;Device&quot;
-      Identifier &quot;dGPU&quot;
-      Driver &quot;nvidia&quot;
-    EndSection
+  services.xserver = {
+    xkbOptions = &quot;compose:ralt&quot;;
+    layout = &quot;us&quot;;
+  };
 
-    Section &quot;ServerLayout&quot;
-      Identifier &quot;layout&quot;
-      Screen 0 &quot;iGPU&quot;
-    EndSection
-
-    Section &quot;Screen&quot;
-      Identifier &quot;iGPU&quot;
-      Device &quot;iGPU&quot;
-    EndSection
-  '';
-
-  services.xserver.videoDrivers = [ &quot;nvidia&quot; ];
-  hardware.nvidia.prime = {
-    offload.enable = true;
-    intelBusId = &quot;PCI:0:2:0&quot;;
-    nvidiaBusId = &quot;PCI:1:0:0&quot;;
+  users.extraUsers.vini = {
+    extraGroups = [ &quot;input&quot; &quot;uinput&quot; ];
   };
 }
 </code></pre>
-<h2 id="offload-script"><a class="header" href="#offload-script">Offload Script</a></h2>
-<pre><code class="language-nix">let
-  nvidia-offload = pkgs.writeShellScriptBin &quot;nvidia-offload&quot; ''
-    export __NV_PRIME_RENDER_OFFLOAD=1
-    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
-    export __VK_LAYER_NV_optimus=NVIDIA_only
-    exec -a &quot;$1&quot; &quot;$@&quot;
-  '';
-in
-{
-  environment.systemPackages = [
-    nvidia-offload
-  ];
-}
+<p>For more details about this Nix snippet, check the KMonad section about Nix and
+the docs of their NixOS module.</p>
+<h2 id="the-kmonad-config"><a class="header" href="#the-kmonad-config">The KMonad Config</a></h2>
+<p>My current keyboard is a <code>Motospeed CK61</code>. It has a pretty good quality, but a
+terrible usability. It has a confusing layer system, which kills any possibility
+of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
+or <code>F1-F12</code> keys quickly. Also, it doesn't have the tilde (yes, you've read that
+right, there is not way to make a beautiful <code>~</code> by pressing a key). I mostly use
+KMonad to fix these keyboard quirks, this is a relevant part of my current configuration:</p>
+<pre><code class="language-lisp">(defsrc
+  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt cmp  rctl
+)
+
+(deflayer base
+  grv   _    _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _    _    _
+  esc   _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _
+  lmet  lctl _              _              lalt rctl @ext
+)
+
+(deflayer extra
+  _    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  _
+  _    _    up   _    _    _    _    _    _    _    _    ssrq @pau _
+  _    left down rght _    _    _    _    ins  home pgup pgdn _
+  _    _    _    _    _    _    _    _    del  end  _    @mat
+  _    _    _              _              _    _    @bas
+)
 </code></pre>
-<p>This defines a small helper script that you will be using when you want to launch a program using the dedicated GPU.</p>
-<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
-<ul>
-<li>Launching glxgears using the integrated GPU: <code>glxgears</code></li>
-<li>Launching glxgears using the dedicated GPU: <code>nvidia-offload glxgears</code></li>
-</ul>
-<blockquote>
-<p>Extra: Launch Steam games using the GPU:</p>
-<ul>
-<li>Go at the game properties inside the Steam client</li>
-<li>Find <code>Launch Options</code></li>
-<li>If it's empty, change it to <code>nvidia-offload %command%</code></li>
-</ul>
-</blockquote>
-<h2 id="xserver-configuration"><a class="header" href="#xserver-configuration">XServer Configuration</a></h2>
-<pre><code class="language-nix">services.xserver.config = ''
-  # Integrated Intel GPU
-  Section &quot;Device&quot;
-    Identifier &quot;iGPU&quot;
-    Driver &quot;modesetting&quot;
-  EndSection
-
-  # Dedicated NVIDIA GPU
-  Section &quot;Device&quot;
-    Identifier &quot;dGPU&quot;
-    Driver &quot;nvidia&quot;
-  EndSection
-
-  Section &quot;ServerLayout&quot;
-    Identifier &quot;layout&quot;
-    Screen 0 &quot;iGPU&quot;
-  EndSection
-
-  Section &quot;Screen&quot;
-    Identifier &quot;iGPU&quot;
-    Device &quot;iGPU&quot;
-  EndSection
-'';
-</code></pre>
-<p>This was necessary for me because the XServer was not recognizing
-my graphics card, adding this extra piece of configuration solved it.</p>
-<h2 id="nvidia--prime-configuration"><a class="header" href="#nvidia--prime-configuration">NVIDIA + PRIME Configuration</a></h2>
-<pre><code class="language-nix">services.xserver.videoDrivers = [ &quot;nvidia&quot; ];
-
-hardware.nvidia.prime = {
-  offload.enable = true;
-  intelBusId = &quot;PCI:0:2:0&quot;;
-  nvidiaBusId = &quot;PCI:1:0:0&quot;;
-};
-</code></pre>
-<p>The first line here enables the <code>proprietary NVIDIA driver</code> in our system, this
-line is very important, otherwise it will not work.</p>
-<p>Below is the NVIDIA PRIME configuration, in which we must enable <code>offload</code> and
-the both the <code>nvidiaBusId</code> and <code>intelBusId</code> of our GPUs. You can find out how to
-get the bus ids by reading this <a href="https://nixos.wiki/wiki/Nvidia#lspci">relevant part of the NixOS Wiki</a>.</p>
-<blockquote>
-<p>Note: In my system, I had to go to my BIOS settings and change the default
-display output to <code>IGFX</code> (Integrated Graphics) instead of directly using the
-PCIE slot, otherwise my system wouldn't detect the Intel HD device.</p>
-</blockquote>
-<h1 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h1>
-<p>After some tries I could get hybrid graphics working on NixOS in a quite easy
-and reproducible way. This is a writeup meant to help other people with the same
-issue and remember myself about it if I ever need to change it again.</p>
+<p>You can see how I use it to create a new layer to make arrows and others usable,
+turn <code>right-alt</code> into <code>left-alt</code> (<code>ralt</code> does not behave correctly when using
+the <code>us(intl)</code> layout), change <code>ctrl</code> keys position, turn <code>caps lock</code> into <code>esc</code>
+and add the tilde (grv) in place of the original <code>esc</code>.</p>
 <h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
 <ul>
-<li><a href="https://nixos.wiki/wiki/Nvidia">NixOS Wiki's NVIDIA page</a></li>
-<li><a href="https://download.nvidia.com/XFree86/Linux-x86_64/435.17/README/primerenderoffload.html">NVIDIA's PRIME Offloading</a></li>
+<li><a href="https://github.com/kmonad/kmonad">KMonad's GitHub Page</a></li>
+<li><a href="https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd">KMonad's Tutorial</a></li>
+<li><a href="https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd">My KMonad configuration</a></li>
 </ul>
-<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">16:47 Wednesday 27 October 2021</div>
+<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">14:15 Tuesday 26 October 2021</div>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../NixOS/Elegant remappings with KMonad.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                            <a rel="next" href="../NixOS/Single GPU Passthrough.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../NixOS/setting_background_image.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -335,10 +289,10 @@ issue and remember myself about it if I ever need to change it again.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../NixOS/Elegant remappings with KMonad.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                    <a rel="next" href="../NixOS/Single GPU Passthrough.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../NixOS/setting_background_image.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

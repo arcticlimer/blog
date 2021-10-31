@@ -3,6 +3,7 @@ date: 2021-10-29T21:01
 title: KVM GPU Passthrough
 ---
 
+<!-- TODO: Update TOC -->
 # Table of Contents
 <!-- toc -->
 - [Intro](#intro)
@@ -443,7 +444,28 @@ Inside your Windows box, you will need to:
 - [Add IVSHMEM support](#ivshmem-support).
 - [Download and install `Looking Glass (host)`](https://looking-glass.io/downloads).
 
+You should now be able to run something like `looking-glass-client -s no -F -f /dev/shm/looking-glass` on your host and see your guest graphical output.
+
 > Note: The version of both your Looking Glass client and host applications must match.
+
+## USB Support
+If you need to use your USBs to wire up say a pendrive or an external HD, you
+can easily plug them into your PC and pass them to your guest through the **Add
+Hardware** button inside the box's details.
+
+## Partition Support
+To passthorugh native partitions, create them on your host, then inside the **Add
+Hardware** menu, select **Storage**, uncheck **Create a disk image for the
+virtual machine**, check **Select or create custom storage** and add the path do
+your partition inside the input (e.g: `/dev/sdb2`).
+
+# Performance Improvements
+
+## Changing number of CPU cores
+I've initially had some trouble with poor CPU performance, In order to improve
+it I went into the **CPUs** section inside the box's details and checked
+**Manually set CPU topology**, from here you can increase the number of real
+cores working with the VM.
 
 # Conclusion
 While tinkering with and learning more about `VFIO` and `QEMU`/`libvirt`, I've

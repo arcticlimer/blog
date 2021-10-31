@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>Nix Flakes Cheat Sheet</div></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../NixOS/gpu_passthrough.html" class="active">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../NixOS/gpu_passthrough.html" class="active">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -144,6 +144,7 @@
         });
     });
 </script>
+<!-- TODO: Update TOC -->
 <h1 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h1>
 <!-- toc -->
 <ul>
@@ -606,9 +607,25 @@ just don't add these two properties and lauch `looking-glass-client` with the
 <li><a href="#ivshmem-support">Add IVSHMEM support</a>.</li>
 <li><a href="https://looking-glass.io/downloads">Download and install <code>Looking Glass (host)</code></a>.</li>
 </ul>
+<p>You should now be able to run something like <code>looking-glass-client -s no -F -f /dev/shm/looking-glass</code> on your host and see your guest graphical output.</p>
 <blockquote>
 <p>Note: The version of both your Looking Glass client and host applications must match.</p>
 </blockquote>
+<h2 id="usb-support"><a class="header" href="#usb-support">USB Support</a></h2>
+<p>If you need to use your USBs to wire up say a pendrive or an external HD, you
+can easily plug them into your PC and pass them to your guest through the <strong>Add
+Hardware</strong> button inside the box's details.</p>
+<h2 id="partition-support"><a class="header" href="#partition-support">Partition Support</a></h2>
+<p>To passthorugh native partitions, create them on your host, then inside the <strong>Add
+Hardware</strong> menu, select <strong>Storage</strong>, uncheck <strong>Create a disk image for the
+virtual machine</strong>, check <strong>Select or create custom storage</strong> and add the path do
+your partition inside the input (e.g: <code>/dev/sdb2</code>).</p>
+<h1 id="performance-improvements"><a class="header" href="#performance-improvements">Performance Improvements</a></h1>
+<h2 id="changing-number-of-cpu-cores"><a class="header" href="#changing-number-of-cpu-cores">Changing number of CPU cores</a></h2>
+<p>I've initially had some trouble with poor CPU performance, In order to improve
+it I went into the <strong>CPUs</strong> section inside the box's details and checked
+<strong>Manually set CPU topology</strong>, from here you can increase the number of real
+cores working with the VM.</p>
 <h1 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h1>
 <p>While tinkering with and learning more about <code>VFIO</code> and <code>QEMU</code>/<code>libvirt</code>, I've
 managed to find an interesting virtual machine workflow:</p>
@@ -725,6 +742,9 @@ in
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Nix/flakes_cheat_sheet.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
                             <a rel="next" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
@@ -734,6 +754,9 @@ in
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Nix/flakes_cheat_sheet.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
                     <a rel="next" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>

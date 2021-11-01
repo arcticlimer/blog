@@ -3,39 +3,8 @@ date: 2021-10-29T21:01
 title: KVM GPU Passthrough
 ---
 
-<!-- TODO: Update TOC -->
 # Table of Contents
 <!-- toc -->
-- [Intro](#intro)
-- [Hardware](#hardware)
-- [Requirements](#requirements)
-- [Setup](#setup)
-  * [Isolating the GPU](#isolating-the-gpu)
-    + [Setting Integrated Graphics as Output](#setting-integrated-graphics-as-output)
-    + [Enabling IOMMU](#enabling-iommu)
-    + [Identifying IOMMU Devices](#identifying-iommu-devices)
-    + [Configuring the NixOS Host](#configuring-the-nixos-host)
-  * [Installing the Guest OS](#installing-the-guest-os)
-    + [NixOS Virtualization Setup](#nixos-virtualization-setup)
-    + [Installation](#installation)
-  * [PCI Passthrough](#pci-passthrough)
-  * [Keyboard/Mouse support](#keyboard-mouse-support)
-    + [Tips](#tips)
-  * [IVSHMEM Support](#ivshmem-support)
-  * [KMonad Support](#kmonad-support)
-  * [Audio Support](#audio-support)
-    + [Scream + Bridged Network](#scream--bridged-network)
-      - [Host Setup](#host-setup)
-      - [Guest Setup](#guest-setup)
-    + [Scream + IVSHMEM](#scream--ivshmem)
-      - [Host Setup](#host-setup-1)
-      - [Guest Setup](#guest-setup-1)
-  * [Video support](#video-support)
-    + [Looking Glass](#looking-glass)
-      - [Host Setup](#host-setup-2)
-      - [Guest Setup](#guest-setup-2)
-- [Conclusion](#conclusion)
-- [Resources](#resources)
 
 # Intro
 Recently I wanted to run a Windows virtual machine from NixOS that has access to
@@ -466,6 +435,8 @@ I've initially had some trouble with poor CPU performance, In order to improve
 it I went into the **CPUs** section inside the box's details and checked
 **Manually set CPU topology**, from here you can increase the number of real
 cores working with the VM.
+
+## CPU Pinning
 
 # Conclusion
 While tinkering with and learning more about `VFIO` and `QEMU`/`libvirt`, I've

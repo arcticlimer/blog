@@ -5,15 +5,6 @@ title: Hybrid Graphics with NVIDIA PRIME
 
 # Table of Contents
 <!-- toc -->
-- [Intro](#intro)
-  * [Author's Setup](#author-s-setup)
-- [NixOS Configuration](#nixos-configuration)
-  * [Offload Script](#offload-script)
-    + [Examples](#examples)
-  * [XServer Configuration](#xserver-configuration)
-  * [NVIDIA + PRIME Configuration](#nvidia---prime-configuration)
-- [Conclusion](#conclusion)
-- [Resources](#resources)
 
 # Intro
 I've spent some time trying to setup hybrid graphics on NixOS and managed to get

@@ -5,15 +5,6 @@ title: Elegant remappings with KMonad
 
 # Table of Contents
 <!-- toc -->
-- [Intro](#intro)
-- [What is KMonad?](#what-is-kmonad-)
-- [Why use KMonad?](#why-use-kmonad-)
-  * [Pros](#pros)
-  * [Cons](#cons)
-- [Using KMonad with NixOS](#using-kmonad-with-nixos)
-  * [The Nix Derivation](#the-nix-derivation)
-  * [The KMonad Config](#the-kmonad-config)
-- [Resources](#resources)
 
 # Intro
 I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
@@ -79,7 +70,7 @@ in
     layout = "us";
   };
 
-  users.extraUsers.vini = {
+  users.extraUsers.your_username = {
     extraGroups = [ "input" "uinput" ];
   };
 }

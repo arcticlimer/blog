@@ -130,23 +130,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js" integrity="sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        renderMathInElement(document.body, {
-          delimiters: [
-              {left: '$$', right: '$$', display: true},
-              {left: '$', right: '$', display: false},
-          ],
-          throwOnError : false
-        });
-    });
-</script>
-<!-- TODO: Update TOC -->
-<h1 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h1>
-<!-- toc -->
+                        <h1 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h1>
 <ul>
 <li><a href="#intro">Intro</a></li>
 <li><a href="#hardware">Hardware</a></li>
@@ -168,7 +152,7 @@
 </ul>
 </li>
 <li><a href="#pci-passthrough">PCI Passthrough</a></li>
-<li><a href="#keyboard-mouse-support">Keyboard/Mouse support</a>
+<li><a href="#keyboardmouse-support">Keyboard/Mouse support</a>
 <ul>
 <li><a href="#tips">Tips</a></li>
 </ul>
@@ -201,6 +185,14 @@
 </li>
 </ul>
 </li>
+<li><a href="#usb-support">USB Support</a></li>
+<li><a href="#partition-support">Partition Support</a></li>
+</ul>
+</li>
+<li><a href="#performance-improvements">Performance Improvements</a>
+<ul>
+<li><a href="#changing-number-of-cpu-cores">Changing number of CPU cores</a></li>
+<li><a href="#cpu-pinning">CPU Pinning</a></li>
 </ul>
 </li>
 <li><a href="#conclusion">Conclusion</a></li>
@@ -626,6 +618,7 @@ your partition inside the input (e.g: <code>/dev/sdb2</code>).</p>
 it I went into the <strong>CPUs</strong> section inside the box's details and checked
 <strong>Manually set CPU topology</strong>, from here you can increase the number of real
 cores working with the VM.</p>
+<h2 id="cpu-pinning"><a class="header" href="#cpu-pinning">CPU Pinning</a></h2>
 <h1 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h1>
 <p>While tinkering with and learning more about <code>VFIO</code> and <code>QEMU</code>/<code>libvirt</code>, I've
 managed to find an interesting virtual machine workflow:</p>
@@ -737,7 +730,18 @@ in
 <li><a href="https://forum.level1techs.com/t/sound-while-in-looking-glass-how-to-get-it-to-work-properly-in-november-2020/163448/7">Sound while in Looking Glass: How to get it working</a></li>
 </ul>
 <div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">21:01 Friday 29 October 2021</div>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.20/dist/katex.min.js" integrity="sha384-ov99pRO2tAc0JuxTVzf63RHHeQTJ0CIawbDZFiFTzB07aqFZwEu2pz4uzqL+5OPG" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var math = document.querySelectorAll("[class^=katex]");
+    for (var i = 0; i < math.length; i++) {
+      // Convert escaped ampersands before rendering
+      var toRender = math[i].textContent.replace(/&amp;/g, '&');
+      katex.render(toRender, math[i]);
+    }
+}, false)
+</script>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

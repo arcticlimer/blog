@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Googling using Kitty + Googler - My blog</title>
+        <title>Googling from the CLI using Googler - My blog</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/googling_kitty_plus_googler.html" class="active">Googling using Kitty + Googler</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Workflow/googling_with_googler.html" class="active">Googling from the CLI using Googler</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -130,13 +130,21 @@
 
                 <div id="content" class="content">
                     <main>
-                        <p>Today I've discovered about <a href="https://github.com/jarun/googler">googler</a>.
+                        <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
+<p>Today I've discovered about <a href="https://github.com/jarun/googler">googler</a>, it's a
+CLI program that allows you to make google queries from your terminal.
 Usually when I need to google something while programming, be it an error,
-issue or documentation I spin up a new browser tab with the query using <a href="https://chrome.google.com/webstore/detail/vimium/dbepggeogbaibhgnhhndojpepiihcmeb">Vimium</a>. Then I spend some more time scrolling down trying to find what I want. Using <strong>googler</strong>, I just need to enter my query and press <code>enter</code>, then I have a clean view of the search results and I can open them directly with my browser using <a href="https://sw.kovidgoyal.net/kitty/kittens/hints/">Kitty's hints</a>, by pressing <code>ctrl+shift+e</code> and selecting the URL that I want to open.</p>
+issue or documentation I spin up a new browser tab with the query using <a href="https://chrome.google.com/webstore/detail/vimium/dbepggeogbaibhgnhhndojpepiihcmeb">Vimium</a>. Then I spend some more time scrolling down trying to find what I want. Using <strong>googler</strong>, I just need to enter my query and press <strong>enter</strong>, then I have a clean view of the search results and I can open them directly with my browser using <strong>googler</strong>'s commandline interface.</p>
+<h1 id="small-googler-cheat-sheet"><a class="header" href="#small-googler-cheat-sheet">Small googler cheat sheet</a></h1>
+<ul>
+<li><code>&lt;number&gt;</code>: Opens the <em>nth</em> result in your browser.</li>
+<li><code>n</code>: Goes to the next page of results.</li>
+<li><code>p</code>: Goes to the previous page of results.</li>
+<li><code>f</code>: Goes to the first page of results.</li>
+</ul>
 <h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
 <ul>
 <li><a href="https://github.com/jarun/googler">Googler</a></li>
-<li><a href="https://github.com/kovidgoyal/kitty">Kitty</a></li>
 <li><a href="https://chrome.google.com/webstore/detail/vimium/dbepggeogbaibhgnhhndojpepiihcmeb">Vimium</a></li>
 </ul>
 <div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">17:51 Saturday 06 November 2021</div>

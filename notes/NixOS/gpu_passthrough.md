@@ -388,7 +388,7 @@ session.
   spice server.
 
   If you prefer swapping your keyboard and mouse between your host and the VM, 
-  just don't add these two properties and lauch `looking-glass-client` with the 
+  just don't add these two properties and launch `looking-glass-client` with the 
   `-s no` flag.
   -->
   <graphics type="spice" autoport="yes">
@@ -436,7 +436,7 @@ it I went into the **CPUs** section inside the box's details and checked
 **Manually set CPU topology**, from here you can increase the number of real
 cores working with the VM.
 
-## CPU Pinning
+<!-- ## CPU Pinning -->
 
 # Conclusion
 While tinkering with and learning more about `VFIO` and `QEMU`/`libvirt`, I've
@@ -447,6 +447,9 @@ managed to find an interesting virtual machine workflow:
 - Inputs: I'm using both my keyboard and mouse as `evdev` inputs, so I can swap
   between the bare metal and the virtual machine. I'm also using KMonad's output
   device as my keyboard device.
+- Storage: I've installed Windows in a small QEMU virtual disk inside my SSD for
+  faster initialization and added another QEMU virtual storage (which is inside
+  my HD) for storing data. 
 
 The experience has been much greater than dual boot, since I can just open
 Looking Glass and use Windows as if it were just another workspace in my window

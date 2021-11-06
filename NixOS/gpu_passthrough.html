@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../NixOS/gpu_passthrough.html" class="active">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../NixOS/gpu_passthrough.html" class="active">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant remappings with KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_kitty_plus_googler.html">Googling using Kitty + Googler</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -192,7 +192,6 @@
 <li><a href="#performance-improvements">Performance Improvements</a>
 <ul>
 <li><a href="#changing-number-of-cpu-cores">Changing number of CPU cores</a></li>
-<li><a href="#cpu-pinning">CPU Pinning</a></li>
 </ul>
 </li>
 <li><a href="#conclusion">Conclusion</a></li>
@@ -574,7 +573,7 @@ You only need to add `&lt;graphics&gt;` and `&lt;video&gt;` if you are going to 
 spice server.
 
 If you prefer swapping your keyboard and mouse between your host and the VM, 
-just don't add these two properties and lauch `looking-glass-client` with the 
+just don't add these two properties and launch `looking-glass-client` with the 
 `-s no` flag.
 --&gt;
 &lt;graphics type=&quot;spice&quot; autoport=&quot;yes&quot;&gt;
@@ -618,7 +617,7 @@ your partition inside the input (e.g: <code>/dev/sdb2</code>).</p>
 it I went into the <strong>CPUs</strong> section inside the box's details and checked
 <strong>Manually set CPU topology</strong>, from here you can increase the number of real
 cores working with the VM.</p>
-<h2 id="cpu-pinning"><a class="header" href="#cpu-pinning">CPU Pinning</a></h2>
+<!-- ## CPU Pinning -->
 <h1 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h1>
 <p>While tinkering with and learning more about <code>VFIO</code> and <code>QEMU</code>/<code>libvirt</code>, I've
 managed to find an interesting virtual machine workflow:</p>
@@ -629,6 +628,9 @@ I'm doing.</li>
 <li>Inputs: I'm using both my keyboard and mouse as <code>evdev</code> inputs, so I can swap
 between the bare metal and the virtual machine. I'm also using KMonad's output
 device as my keyboard device.</li>
+<li>Storage: I've installed Windows in a small QEMU virtual disk inside my SSD for
+faster initialization and added another QEMU virtual storage (which is inside
+my HD) for storing data. </li>
 </ul>
 <p>The experience has been much greater than dual boot, since I can just open
 Looking Glass and use Windows as if it were just another workspace in my window

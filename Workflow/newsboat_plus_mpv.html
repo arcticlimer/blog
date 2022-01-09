@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Elegant Remappings With KMonad - My blog</title>
+        <title>Distraction-Free Setup Using Newsboat And mpv - My blog</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item expanded "><a href="../NixOS/kmonad_remappings.html" class="active">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item expanded "><a href="../Workflow/newsboat_plus_mpv.html" class="active">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -130,133 +130,100 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h1>
-<ul>
-<li><a href="#intro">Intro</a></li>
-<li><a href="#what-is-kmonad">What is KMonad?</a></li>
-<li><a href="#why-use-kmonad">Why use KMonad?</a>
-<ul>
-<li><a href="#pros">Pros</a></li>
-<li><a href="#cons">Cons</a></li>
-</ul>
-</li>
-<li><a href="#using-kmonad-with-nixos">Using KMonad with NixOS</a>
-<ul>
-<li><a href="#the-nix-derivation">The Nix Derivation</a></li>
-<li><a href="#the-kmonad-config">The KMonad Config</a></li>
-</ul>
-</li>
-<li><a href="#resources">Resources</a></li>
-</ul>
-<h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p>I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
-failing to achieve my goals with <code>xmodmap</code> and others, I was sure there had to
-be a better solution, and then I've found KMonad.</p>
-<h1 id="what-is-kmonad"><a class="header" href="#what-is-kmonad">What is KMonad?</a></h1>
-<p>KMonad is a multiplatform key remapping software which uses a lisp-like
-declarative configuration language.</p>
-<h1 id="why-use-kmonad"><a class="header" href="#why-use-kmonad">Why use KMonad?</a></h1>
-<p>Once you get used to it, KMonad provides a pretty stable experience and a sweet
-way to configure your key remappings.</p>
-<h2 id="pros"><a class="header" href="#pros">Pros</a></h2>
-<ul>
-<li>It works in a system-wide manner, so it doesn't matter whether you are inside
-a TTY rescuing your computer or relaxing inside your X session, your
-key remappings will work.</li>
-<li>It's pretty easy to define configurations for multiple keyboards and switch
-between them.</li>
-<li>It works. Seriously. I cannot stress this enough, I've spent a lot of time
-using programs to detect the keycodes that my keyboard was emitting and
-writing some cryptic commands inside <code>xmodmap</code>'s <code>.xkb</code> files (and guess what,
-it didn't worked). With KMonad I literally draw my keyboard in ASCII
-and change the characters' placement. And it works.</li>
-<li>It supports some fancy stuff such as macros, layers, composite characters, the
-ability to run shell commands when pressing a key, etc...</li>
-</ul>
-<h2 id="cons"><a class="header" href="#cons">Cons</a></h2>
-<ul>
-<li>It has a steep learning curve, and you probably will need to read their ~1000
-lines lisp-like file tutorial to start using it.</li>
-<li>You still need to change a few lines in your configuration files in order to
-make them run in another platform.</li>
-</ul>
-<h1 id="using-kmonad-with-nixos"><a class="header" href="#using-kmonad-with-nixos">Using KMonad with NixOS</a></h1>
-<p>Since KMonad is still not available directly into NixOS as a system module, the
-current way to use KMonad is through <a href="https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos">their own NixOS module</a>.</p>
-<h2 id="the-nix-derivation"><a class="header" href="#the-nix-derivation">The Nix Derivation</a></h2>
-<p>With these settings, KMonad should already start along with your NixOS system.</p>
+                        <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
+<p>Recently I got frustrated from getting distracted by recommendations while
+watching YouTube videos or reading articles. The solution that I've found
+(although not really new) is very elegant. In this post I'll talk about it and
+share system configuration snippets in the <em>Nix</em> language.</p>
+<h1 id="enter-newsboat"><a class="header" href="#enter-newsboat">Enter Newsboat</a></h1>
+<p>Newsboat is a battle-tested RSS reader that works really well, you can define
+and tag URLs of blogs you usually read and it will automatically search for new
+posts and allows you to read them.</p>
+<h1 id="enter-mpv"><a class="header" href="#enter-mpv">Enter mpv</a></h1>
+<p>Mpv is an awesome libre commandline video player, and it can also leverage of
+<em>youtube-dl</em> in order to play videos from YouTube, without the need of opening
+it in your browser.</p>
+<h2 id="installing-newsboat-and-mpv-through-home-manager"><a class="header" href="#installing-newsboat-and-mpv-through-home-manager">Installing Newsboat and mpv Through Home-Manager</a></h2>
 <pre><code class="language-nix">{ pkgs, ... }:
-
 let
-  # The KMonad derivation (binary)
-  kmonad = (import ../../pkgs/kmonad/derivation.nix) pkgs;
+  mpv = &quot;${pkgs.mpv}/bin/mpv&quot;;
 in
 {
-  imports = [
-    # The KMonad NixOS module
-    ./kmonad.nix
-  ];
-
-  services.kmonad = {
+  programs.newsboat = {
     enable = true;
-    configfiles = [ ../../pkgs/kmonad/configs/ck61.kbd ];
-    package = kmonad;
-  };
+    autoReload = true;
+    urls = [
+      {
+        url = &quot;https://hnrss.org/newest&quot;;
+        title = &quot;Hacker News&quot;;
+        tags = [ &quot;tech&quot; ];
+      }
 
-  services.xserver = {
-    xkbOptions = &quot;compose:ralt&quot;;
-    layout = &quot;us&quot;;
-  };
+      # Reddit
+      {
+        url = &quot;https://www.reddit.com/r/neovim/.rss&quot;;
+        title = &quot;/r/neovim&quot;;
+        tags = [ &quot;neovim&quot; &quot;reddit&quot; ];
+      }
 
-  users.extraUsers.your_username = {
-    extraGroups = [ &quot;input&quot; &quot;uinput&quot; ];
+      # Youtube
+      {
+        title = &quot;Computerphile&quot;;
+        url = &quot;https://www.youtube.com/feeds/videos.xml?channel_id=UC9-y-6csu5WGm29I7JiwpnA&quot;;
+        tags = [ &quot;tech&quot; &quot;youtube&quot; ];
+      }
+    ];
+    extraConfig = ''
+      # misc
+      refresh-on-startup yes
+
+      # display
+      feed-sort-order unreadarticlecount-asc
+      text-width      72
+
+      # unbind keys
+      unbind-key ENTER
+      unbind-key j
+      unbind-key k
+      unbind-key J
+      unbind-key K
+
+      # bind keys - vim style
+      bind-key j down
+      bind-key k up
+      bind-key l open
+      bind-key h quit
+      bind-key g home
+      bind-key G end
+
+      # colorscheme
+      color listnormal        white black
+      color listnormal_unread white black
+      color listfocus         white black bold reverse
+      color listfocus_unread  white black bold reverse
+      color info              white black reverse bold
+      color background        white black
+      color article           white black
+
+      # macros
+      macro v set browser &quot;${mpv} %u&quot; ; open-in-browser ; set browser &quot;firefox %u&quot; -- &quot;Open video on mpv&quot;
+    '';
   };
 }
 </code></pre>
-<p>For more details about this Nix snippet, check the KMonad section about Nix and
-the docs of their NixOS module.</p>
-<h2 id="the-kmonad-config"><a class="header" href="#the-kmonad-config">The KMonad Config</a></h2>
-<p>My current keyboard is a <code>Motospeed CK61</code>. It has a pretty good quality, but a
-terrible usability. It has a confusing layer system, which kills any possibility
-of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
-or <code>F1-F12</code> keys quickly. Also, it doesn't have the tilde (yes, you've read that
-right, there is not way to make a beautiful <code>~</code> by pressing a key). I mostly use
-KMonad to fix these keyboard quirks, this is a relevant part of my current configuration:</p>
-<pre><code class="language-lisp">(defsrc
-  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
-  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-  caps a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  lctl lmet lalt           spc            ralt cmp  rctl
-)
-
-(deflayer base
-  grv   _    _    _    _    _    _    _    _    _    _    _    _    _
-  _     _    _    _    _    _    _    _    _    _    _    _    _    _
-  esc   _    _    _    _    _    _    _    _    _    _    _    _
-  _     _    _    _    _    _    _    _    _    _    _    _
-  lmet  lctl _              _              lalt rctl @ext
-)
-
-(deflayer extra
-  _    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  _
-  _    _    up   _    _    _    _    _    _    _    _    ssrq @pau _
-  _    left down rght _    _    _    _    ins  home pgup pgdn _
-  _    _    _    _    _    _    _    _    del  end  _    @mat
-  _    _    _              _              _    _    @bas
-)
-</code></pre>
-<p>You can see how I use it to create a new layer to make arrows and others usable,
-turn <code>right-alt</code> into <code>left-alt</code> (<code>ralt</code> does not behave correctly when using
-the <code>us(intl)</code> layout), change <code>ctrl</code> keys position, turn <code>caps lock</code> into <code>esc</code>
-and add the tilde (grv) in place of the original <code>esc</code>.</p>
+<p>Having this setup, you can now just hover a YouTube entry in newsboat and press
+<code>,v</code>, and it will open a window playing the video.</p>
+<h1 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h1>
+<p>Now I can open newsboat whenever I want to check if there's any new good media
+to consume, without having to fire up a browser and opening something such as
+YouTube or Blogs.</p>
 <h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
 <ul>
-<li><a href="https://github.com/kmonad/kmonad">KMonad's GitHub Page</a></li>
-<li><a href="https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd">KMonad's Tutorial</a></li>
-<li><a href="https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd">My KMonad configuration</a></li>
+<li><a href="https://newsboat.org">Newsboat</a></li>
+<li><a href="https://github.com/mpv-player/mpv">mpv</a></li>
+<li><a href="https://github.com/ytdl-org/youtube-dl">youtube-dl</a></li>
 </ul>
-<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">14:15 Tuesday 26 October 2021</div>
+<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">23:25 Saturday 08 January 2022</div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.20/dist/katex.min.js" integrity="sha384-ov99pRO2tAc0JuxTVzf63RHHeQTJ0CIawbDZFiFTzB07aqFZwEu2pz4uzqL+5OPG" crossorigin="anonymous"></script>
 <script>
@@ -273,10 +240,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../Workflow/googling_with_googler.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                            <a rel="next" href="../NixOS/setting_background_image.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -285,10 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../Workflow/googling_with_googler.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                    <a rel="next" href="../NixOS/setting_background_image.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

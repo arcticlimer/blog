@@ -1,6 +1,6 @@
 ---
 date: 2021-10-26T14:15
-title: Elegant remappings with KMonad
+title: Elegant Remappings With KMonad
 ---
 
 # Table of Contents

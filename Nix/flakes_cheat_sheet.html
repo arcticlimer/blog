@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Nix/flakes_cheat_sheet.html" class="active">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Development/nix_tensorflow_notebook_env.html">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Nix/flakes_cheat_sheet.html" class="active">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -130,16 +130,18 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="attributes"><a class="header" href="#attributes">Attributes</a></h1>
-<!-- - `description`: String describing the flake. -->
-<!-- - `inputs`: Attribute set containing all the dependencies of the flake. -->
-<!-- - `inputs.<flake>.url`: Url pointing to the flake. -->
-<!-- - `inputs.<flake>.flake`: Set this to `false` if the repository is not a flake. -->
-<!-- - `outputs.checks.<system>.<name>`: Derivation describing a check ran by `nix flake check`. -->
-<!-- - `outputs.packages.<system>.<name>`: Derivation which can be built with -->
-<!--   `nix build`. -->
-<!-- - `outputs.defaultPackage.<system>.<name>`: Derivation which is built by -->
-<!--   `nix build` if invoked without arguments. -->
+                        <ul>
+<li><a href="#attributes">Attributes</a></li>
+<li><a href="#commands">Commands</a></li>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#plain-flake-with-package--devshell">Plain Flake with Package + Devshell</a></li>
+<li><a href="#using-flake-utils">Using Flake-Utils</a></li>
+</ul>
+</li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+<h1 id="attributes"><a class="header" href="#attributes">Attributes</a></h1>
 <pre><code class="language-nix"># Commonly used options. For full list, check https://nixos.wiki/wiki/Flakes
 {
   description: &quot;&quot;; # String describing the flake.
@@ -253,6 +255,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Development/nix_tensorflow_notebook_env.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
                             <a rel="next" href="../NixOS/gpu_passthrough.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
@@ -262,6 +267,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Development/nix_tensorflow_notebook_env.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
                     <a rel="next" href="../NixOS/gpu_passthrough.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>

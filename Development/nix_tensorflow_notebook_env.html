@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Elegant Remappings With KMonad - My blog</title>
+        <title>Reproducible Machine Learning Environment With Nix - My blog</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Development/nix_tensorflow_notebook_env.html">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item expanded "><a href="../NixOS/kmonad_remappings.html" class="active">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Development/nix_tensorflow_notebook_env.html" class="active">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -130,133 +130,105 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h1>
-<ul>
+                        <ul>
 <li><a href="#intro">Intro</a></li>
-<li><a href="#what-is-kmonad">What is KMonad?</a></li>
-<li><a href="#why-use-kmonad">Why use KMonad?</a>
+<li><a href="#creating-the-environment">Creating The Environment</a>
 <ul>
-<li><a href="#pros">Pros</a></li>
-<li><a href="#cons">Cons</a></li>
-</ul>
-</li>
-<li><a href="#using-kmonad-with-nixos">Using KMonad with NixOS</a>
-<ul>
-<li><a href="#the-nix-derivation">The Nix Derivation</a></li>
-<li><a href="#the-kmonad-config">The KMonad Config</a></li>
+<li><a href="#installing-tensorflow">Installing Tensorflow</a></li>
+<li><a href="#flakenix">flake.nix</a></li>
+<li><a href="#pyprojecttoml">pyproject.toml</a></li>
 </ul>
 </li>
 <li><a href="#resources">Resources</a></li>
 </ul>
 <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p>I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
-failing to achieve my goals with <code>xmodmap</code> and others, I was sure there had to
-be a better solution, and then I've found KMonad.</p>
-<h1 id="what-is-kmonad"><a class="header" href="#what-is-kmonad">What is KMonad?</a></h1>
-<p>KMonad is a multiplatform key remapping software which uses a lisp-like
-declarative configuration language.</p>
-<h1 id="why-use-kmonad"><a class="header" href="#why-use-kmonad">Why use KMonad?</a></h1>
-<p>Once you get used to it, KMonad provides a pretty stable experience and a sweet
-way to configure your key remappings.</p>
-<h2 id="pros"><a class="header" href="#pros">Pros</a></h2>
+<p>Recently I've been tinkering with machine learning, and wanted to have a local
+reproducible <em>Python</em> development environment which supports GPU. This post is meant to
+share the resulting <em>Nix</em> and <em>poetry</em> configs.</p>
+<h1 id="creating-the-environment"><a class="header" href="#creating-the-environment">Creating The Environment</a></h1>
+<h2 id="installing-tensorflow"><a class="header" href="#installing-tensorflow">Installing Tensorflow</a></h2>
+<p>Tensorflow with CUDA is the great star here, and you have 2 main ways of installing it using <em>Nix</em>:</p>
 <ul>
-<li>It works in a system-wide manner, so it doesn't matter whether you are inside
-a TTY rescuing your computer or relaxing inside your X session, your
-key remappings will work.</li>
-<li>It's pretty easy to define configurations for multiple keyboards and switch
-between them.</li>
-<li>It works. Seriously. I cannot stress this enough, I've spent a lot of time
-using programs to detect the keycodes that my keyboard was emitting and
-writing some cryptic commands inside <code>xmodmap</code>'s <code>.xkb</code> files (and guess what,
-it didn't worked). With KMonad I literally draw my keyboard in ASCII
-and change the characters' placement. And it works.</li>
-<li>It supports some fancy stuff such as macros, layers, composite characters, the
-ability to run shell commands when pressing a key, etc...</li>
+<li>Building <code>tensorflow-gpu</code> from source, which uses a lot of computational
+resources and time.</li>
+<li>Downloading the required <strong>CUDA</strong> libraries and adding them to your
+<code>$LD_LIBRARY_PATH</code>.</li>
 </ul>
-<h2 id="cons"><a class="header" href="#cons">Cons</a></h2>
-<ul>
-<li>It has a steep learning curve, and you probably will need to read their ~1000
-lines lisp-like file tutorial to start using it.</li>
-<li>You still need to change a few lines in your configuration files in order to
-make them run in another platform.</li>
-</ul>
-<h1 id="using-kmonad-with-nixos"><a class="header" href="#using-kmonad-with-nixos">Using KMonad with NixOS</a></h1>
-<p>Since KMonad is still not available directly into NixOS as a system module, the
-current way to use KMonad is through <a href="https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos">their own NixOS module</a>.</p>
-<h2 id="the-nix-derivation"><a class="header" href="#the-nix-derivation">The Nix Derivation</a></h2>
-<p>With these settings, KMonad should already start along with your NixOS system.</p>
-<pre><code class="language-nix">{ pkgs, ... }:
+<p>This post will go with the latter.</p>
+<h2 id="flakenix"><a class="header" href="#flakenix">flake.nix</a></h2>
+<pre><code class="language-nix">{
+  description = &quot;Tensorflow + CUDA development environment&quot;;
 
-let
-  # The KMonad derivation (binary)
-  kmonad = (import ../../pkgs/kmonad/derivation.nix) pkgs;
-in
-{
-  imports = [
-    # The KMonad NixOS module
-    ./kmonad.nix
-  ];
+  inputs.flake-utils.url = &quot;github:numtide/flake-utils&quot;;
+  inputs.nixpkgs.url = &quot;github:NixOS/nixpkgs&quot;;
+  inputs.poetry2nix.url = &quot;github:nix-community/poetry2nix&quot;;
 
-  services.kmonad = {
-    enable = true;
-    configfiles = [ ../../pkgs/kmonad/configs/ck61.kbd ];
-    package = kmonad;
-  };
+  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
+    {
+      # Nixpkgs overlay providing the application
+      overlay = nixpkgs.lib.composeManyExtensions [
+        poetry2nix.overlay
+        (final: prev: {
+          pythonEnv = prev.poetry2nix.mkPoetryEnv {
+            projectDir = ./.;
+            preferWheels = true;
+          };
+        })
+      ];
+    } // (flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ self.overlay ];
+          config.allowUnfree = true;
+        };
+      in
+      rec {
+        devShell = pkgs.mkShell {
+          name = &quot;tf-dev-environment&quot;;
+          nativeBuildInputs = [ pkgs.poetry ];
 
-  services.xserver = {
-    xkbOptions = &quot;compose:ralt&quot;;
-    layout = &quot;us&quot;;
-  };
+          shellHook = ''
+            export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.cudatoolkit_11}/lib:${pkgs.cudnn_cudatoolkit_11}/lib:${pkgs.cudatoolkit_11.lib}/lib:$LD_LIBRARY_PATH
 
-  users.extraUsers.your_username = {
-    extraGroups = [ &quot;input&quot; &quot;uinput&quot; ];
-  };
+            alias jupyter=&quot;poetry run jupyter&quot;
+          '';
+        };
+    }));
 }
 </code></pre>
-<p>For more details about this Nix snippet, check the KMonad section about Nix and
-the docs of their NixOS module.</p>
-<h2 id="the-kmonad-config"><a class="header" href="#the-kmonad-config">The KMonad Config</a></h2>
-<p>My current keyboard is a <code>Motospeed CK61</code>. It has a pretty good quality, but a
-terrible usability. It has a confusing layer system, which kills any possibility
-of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
-or <code>F1-F12</code> keys quickly. Also, it doesn't have the tilde (yes, you've read that
-right, there is not way to make a beautiful <code>~</code> by pressing a key). I mostly use
-KMonad to fix these keyboard quirks, this is a relevant part of my current configuration:</p>
-<pre><code class="language-lisp">(defsrc
-  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
-  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-  caps a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  lctl lmet lalt           spc            ralt cmp  rctl
-)
+<p>Note that this assumes OpenGL libraries in your <code>$LD_LIBRARY_PATH</code>. If you're
+using NixOS, you can set the <code>hardware.opengl.setLdLibraryPath</code> option to
+<code>true</code>.  On other distros, you might be able to use <em>nixGL</em> or set the path
+manually, if it's not already set.</p>
+<h2 id="pyprojecttoml"><a class="header" href="#pyprojecttoml">pyproject.toml</a></h2>
+<pre><code class="language-toml">[tool.poetry]
+name = &quot;cuda-tensorflow&quot;
+version = &quot;0.1.0&quot;
+description = &quot;&quot;
+authors = [&quot;Your Name &lt;you@example.com&gt;&quot;]
 
-(deflayer base
-  grv   _    _    _    _    _    _    _    _    _    _    _    _    _
-  _     _    _    _    _    _    _    _    _    _    _    _    _    _
-  esc   _    _    _    _    _    _    _    _    _    _    _    _
-  _     _    _    _    _    _    _    _    _    _    _    _
-  lmet  lctl _              _              lalt rctl @ext
-)
+[tool.poetry.dependencies]
+python = &quot;&gt;=3.9,&lt;3.11&quot;
+tf-nightly = &quot;^2.9.0-alpha.20220109&quot;
+keras = &quot;^2.7.0&quot;
+numpy = &quot;^1.22.0&quot;
+matplotlib = &quot;^3.5.1&quot;
+jupyter = &quot;^1.0.0&quot;
 
-(deflayer extra
-  _    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  _
-  _    _    up   _    _    _    _    _    _    _    _    ssrq @pau _
-  _    left down rght _    _    _    _    ins  home pgup pgdn _
-  _    _    _    _    _    _    _    _    del  end  _    @mat
-  _    _    _              _              _    _    @bas
-)
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = [&quot;poetry-core&gt;=1.0.0&quot;]
+build-backend = &quot;poetry.core.masonry.api&quot;
 </code></pre>
-<p>You can see how I use it to create a new layer to make arrows and others usable,
-turn <code>right-alt</code> into <code>left-alt</code> (<code>ralt</code> does not behave correctly when using
-the <code>us(intl)</code> layout), change <code>ctrl</code> keys position, turn <code>caps lock</code> into <code>esc</code>
-and add the tilde (grv) in place of the original <code>esc</code>.</p>
+<p>Notice: Depending on when you find this, you might need to update these dependencies.</p>
 <h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
 <ul>
-<li><a href="https://github.com/kmonad/kmonad">KMonad's GitHub Page</a></li>
-<li><a href="https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd">KMonad's Tutorial</a></li>
-<li><a href="https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd">My KMonad configuration</a></li>
+<li><a href="https://nixos.wiki/wiki/Tensorflow">NixOS Wiki page on Tensorflow</a></li>
+<li><a href="https://github.com/nix-community/poetry2nix">poetry2nix</a></li>
 </ul>
-<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">14:15 Tuesday 26 October 2021</div>
+<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">23:50 Saturday 09 January 2021</div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.20/dist/katex.min.js" integrity="sha384-ov99pRO2tAc0JuxTVzf63RHHeQTJ0CIawbDZFiFTzB07aqFZwEu2pz4uzqL+5OPG" crossorigin="anonymous"></script>
 <script>
@@ -273,10 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <i class="fa fa-angle-left"></i>
-                            </a>
-                            <a rel="next" href="../NixOS/setting_background_image.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../Nix/flakes_cheat_sheet.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -285,10 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../NixOS/hybrid_graphics_nvidia_prime.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
-                    </a>
-                    <a rel="next" href="../NixOS/setting_background_image.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../Nix/flakes_cheat_sheet.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

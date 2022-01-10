@@ -91,6 +91,9 @@ in
 Having this setup, you can now just hover a YouTube entry in newsboat and press
 `,v`, and it will open a window playing the video.
 
+<!-- TODO: Add about using pandoc to convert the html source to markdown and -->
+<!-- rendering it using glow -->
+
 # Conclusion
 Now I can open newsboat whenever I want to check if there's any new good media
 to consume, without having to fire up a browser and opening something such as

@@ -1,20 +1,11 @@
 ---
 date: 2021-10-31T00:35
 title: Nix Flakes Cheat Sheet
-<!-- draft: true -->
 ---
 
-# Attributes
+<!-- toc -->
 
-<!-- - `description`: String describing the flake. -->
-<!-- - `inputs`: Attribute set containing all the dependencies of the flake. -->
-<!-- - `inputs.<flake>.url`: Url pointing to the flake. -->
-<!-- - `inputs.<flake>.flake`: Set this to `false` if the repository is not a flake. -->
-<!-- - `outputs.checks.<system>.<name>`: Derivation describing a check ran by `nix flake check`. -->
-<!-- - `outputs.packages.<system>.<name>`: Derivation which can be built with -->
-<!--   `nix build`. -->
-<!-- - `outputs.defaultPackage.<system>.<name>`: Derivation which is built by -->
-<!--   `nix build` if invoked without arguments. -->
+# Attributes
 
 ```nix 
 # Commonly used options. For full list, check https://nixos.wiki/wiki/Flakes

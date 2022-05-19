@@ -146,7 +146,7 @@ hardware.nvidia.prime = {
 };
 ```
 
-The first line here enables the `proprietary NVIDIA driver` in our system, this
+The first line here enables the **proprietary NVIDIA drivers** in our system, this
 line is very important, otherwise it will not work.
 
 Below is the NVIDIA PRIME configuration, in which we must enable `offload` and

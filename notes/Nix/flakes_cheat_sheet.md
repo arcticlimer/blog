@@ -3,6 +3,7 @@ date: 2021-10-31T00:35
 title: Nix Flakes Cheat Sheet
 ---
 
+# Table of Contents
 <!-- toc -->
 
 # Attributes

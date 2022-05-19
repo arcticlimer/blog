@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Googling from the CLI using Googler - My blog</title>
+        <title>Introduction - My blog</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -74,7 +74,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><div>Azure Adventures</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>Homemade VPN using Wireguard</div></li><li class="chapter-item "><a href="../Azure Adventures/introduction.html">Introduction</a></li><li class="chapter-item "><a href="../Azure Adventures/unturned_server_saga.html">Unturned Server Saga</a></li></ol></li><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Development/nix_tensorflow_notebook_env.html">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>The Dactyl Manuform Experience™</div></li><li class="chapter-item expanded "><a href="../Workflow/googling_with_googler.html" class="active">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><div>Azure Adventures</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>Homemade VPN using Wireguard</div></li><li class="chapter-item expanded "><a href="../Azure Adventures/introduction.html" class="active">Introduction</a></li><li class="chapter-item "><a href="../Azure Adventures/unturned_server_saga.html">Unturned Server Saga</a></li></ol></li><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Development/nix_tensorflow_notebook_env.html">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>The Dactyl Manuform Experience™</div></li><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -130,24 +130,10 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p>Today I've discovered about <a href="https://github.com/jarun/googler">googler</a>, it's a
-CLI program that allows you to make google queries from your terminal.
-Usually when I need to google something while programming, be it an error,
-issue or documentation I spin up a new browser tab with the query using <a href="https://chrome.google.com/webstore/detail/vimium/dbepggeogbaibhgnhhndojpepiihcmeb">Vimium</a>. Then I spend some more time scrolling down trying to find what I want. Using <strong>googler</strong>, I just need to enter my query and press <strong>enter</strong>, then I have a clean view of the search results and I can open them directly with my browser using <strong>googler</strong>'s commandline interface.</p>
-<h1 id="small-googler-cheat-sheet"><a class="header" href="#small-googler-cheat-sheet">Small googler cheat sheet</a></h1>
-<ul>
-<li><code>&lt;number&gt;</code>: Opens the <em>nth</em> result in your browser.</li>
-<li><code>n</code>: Goes to the next page of results.</li>
-<li><code>p</code>: Goes to the previous page of results.</li>
-<li><code>f</code>: Goes to the first page of results.</li>
-</ul>
-<h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
-<ul>
-<li><a href="https://github.com/jarun/googler">Googler</a></li>
-<li><a href="https://chrome.google.com/webstore/detail/vimium/dbepggeogbaibhgnhhndojpepiihcmeb">Vimium</a></li>
-</ul>
-<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">17:51 Saturday 06 November 2021</div>
+                        <p>Currently where I work, we get the Visual Studio Enterprise (MPN) subscription,
+that gives us 150$ Azure monthly credits, I'll use these credits to tinker with
+different stuff involving cloud computing and post some notes about them here.</p>
+<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">06:46 Tuesday 17 May 2022</div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.20/dist/katex.min.js" integrity="sha384-ov99pRO2tAc0JuxTVzf63RHHeQTJ0CIawbDZFiFTzB07aqFZwEu2pz4uzqL+5OPG" crossorigin="anonymous"></script>
 <script>
@@ -164,10 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../NixOS/setting_background_image.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <i class="fa fa-angle-left"></i>
-                            </a>
-                            <a rel="next" href="../Workflow/newsboat_plus_mpv.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../Azure Adventures/unturned_server_saga.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -176,10 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../NixOS/setting_background_image.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
-                    </a>
-                    <a rel="next" href="../Workflow/newsboat_plus_mpv.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../Azure Adventures/unturned_server_saga.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

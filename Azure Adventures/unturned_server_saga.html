@@ -1,0 +1,420 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Unturned Server Saga - My blog</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><div>Azure Adventures</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>Homemade VPN using Wireguard</div></li><li class="chapter-item "><a href="../Azure Adventures/introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="../Azure Adventures/unturned_server_saga.html" class="active">Unturned Server Saga</a></li></ol></li><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Development/nix_tensorflow_notebook_env.html">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><div>The Dactyl Manuform Experience™</div></li><li class="chapter-item "><a href="../Workflow/googling_with_googler.html">Googling from the CLI using Googler</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat And mpv</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">My blog</h1>
+
+                    <div class="right-buttons">
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#hosting">Hosting</a>
+<ul>
+<li><a href="#simple-setup">Simple Setup</a></li>
+<li><a href="#hosting-more-than-one-server-in-the-same-host">Hosting more than one server in the same host</a>
+<ul>
+<li><a href="#startsh">start.sh</a></li>
+<li><a href="#updatesh">update.sh</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#server-configuration">Server Configuration</a>
+<ul>
+<li><a href="#workshop-mods">Workshop Mods</a></li>
+<li><a href="#rocket">Rocket</a></li>
+<li><a href="#rocket-plugins">Rocket Plugins</a></li>
+</ul>
+</li>
+<li><a href="#backups">Backups</a>
+<ul>
+<li><a href="#local-backups">Local backups</a></li>
+<li><a href="#azure-blob-storage-backups">Azure Blob Storage backups</a></li>
+</ul>
+</li>
+<li><a href="#ending">Ending</a></li>
+</ul>
+<h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
+<p>Some years ago I used to have a lot of fun in weekends with some friends playing <a href="https://store.steampowered.com/app/304930/Unturned/">Unturned</a>. It's a really funny game that I like to call the &quot;poor man's Rust&quot;, cause it's free and has an incredibly funny and rust-like mechanic in PVP.
+I've always used to say to them that some day I would host an Unturned server
+and we would have a lot of fun playing and managing it. Since I've got some spare Azure credits, why not hosting one in some port of my virtual machine?</p>
+<h1 id="hosting"><a class="header" href="#hosting">Hosting</a></h1>
+<h2 id="simple-setup"><a class="header" href="#simple-setup">Simple Setup</a></h2>
+<p>For a simple setup, you can follow <a href="https://blog.yat1ma30.com/posts/host-dedicated-unturned-server">this guide</a> and then just use the <code>ServerHelper.sh</code> script inside the game's folder to start your server.</p>
+<h2 id="hosting-more-than-one-server-in-the-same-host"><a class="header" href="#hosting-more-than-one-server-in-the-same-host">Hosting more than one server in the same host</a></h2>
+<p>If you want a fancier setup to do something like tinkering and restarting a second server while people play at your main one, you will need the following scripts:</p>
+<h3 id="startsh"><a class="header" href="#startsh">start.sh</a></h3>
+<pre><code class="language-sh">$unturned_dir = ~/unturned
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`dirname $0`/Unturned_Headless_Data/Plugins/x86_64/
+cp -f $unturned_dir/linux64/steamclient.so $unturned_dir/Unturned_Headless_Data/Plugins/x86_64/steamclient.so
+
+# ~/steamcmd/steamcmd.sh +login anonymous +force_install_dir $unturned_dir +app_update 1110390 validate +exit
+mkdir -p $unturned_dir/linux64
+yes | cp -rf ~/steamcmd/linux64/steamclient.so $unturned_dir
+yes | cp -rf ~/steamcmd/linux64/steamclient.so $unturned_dir/linux64/
+
+# Terminal mode compatible with -logfile 2&gt;&amp;1 IO.
+export TERM=xterm
+
+# Run the server binary.
+# -batchmode and -nographics are Unity player arguments.
+# -logfile 2&gt;&amp;1 can be used to pipe IO to/from the terminal.
+# &quot;$@&quot; appends any command-line arguments passed to this script.
+./Unturned_Headless.x86_64 -batchmode -nographics -ThreadedConsole &quot;$@&quot;
+</code></pre>
+<h3 id="updatesh"><a class="header" href="#updatesh">update.sh</a></h3>
+<pre><code class="language-sh">md5sum ~/steamcmd/linux32/steamclient.so
+md5sum ~/steamcmd/linux64/steamclient.so
+
+mkdir -p ~/steamcmd/
+cd ~/steamcmd/
+curl -sqL &quot;https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz&quot; | tar zxvf -
+chmod +x steamcmd.sh
+./steamcmd.sh +quit
+
+# Fix libraries
+sudo rm -fv /lib/steamclient.so
+sudo rm -fv /lib64/steamclient.so
+sudo ln -s ~/steamcmd/linux32/steamclient.so /lib/steamclient.so
+sudo ln -s ~/steamcmd/linux64/steamclient.so /lib64/steamclient.so
+
+md5sum ~/steamcmd/linux32/steamclient.so
+md5sum ~/steamcmd/linux64/steamclient.so
+</code></pre>
+<p>These are based on the scripts shared in <a href="https://github.com/SmartlyDressedGames/Unturned-3.x-Community/issues/1622#issuecomment-640060882">this commentary</a>.</p>
+<h1 id="server-configuration"><a class="header" href="#server-configuration">Server Configuration</a></h1>
+<h2 id="workshop-mods"><a class="header" href="#workshop-mods">Workshop Mods</a></h2>
+<p>Adding mods is as simple as editing <code>WorkshopDownloaderConfig.json</code> and adding the mods' ids (you can copy them from the URL) and pasting them inside the <code>File_IDs</code> array.</p>
+<pre><code class="language-json">{
+  &quot;File_IDs&quot;: [],
+  &quot;Ignore_Children_File_IDs&quot;: [],
+  &quot;Query_Cache_Max_Age_Seconds&quot;: 600,
+  &quot;Max_Query_Retries&quot;: 2,
+  &quot;Use_Cached_Downloads&quot;: true,
+  &quot;Should_Monitor_Updates&quot;: true,
+  &quot;Shutdown_Update_Detected_Timer&quot;: 600,
+  &quot;Shutdown_Update_Detected_Message&quot;: &quot;Workshop file update detected, shutdown in: {0}&quot;
+}
+</code></pre>
+<h2 id="rocket"><a class="header" href="#rocket">Rocket</a></h2>
+<p>Rocket gives you a really nice framework to setup command permissions, server configurations and others. In order to add it to your game, you should move the Rocket assets into the <code>Modules</code> folder in your game root directory.</p>
+<h2 id="rocket-plugins"><a class="header" href="#rocket-plugins">Rocket Plugins</a></h2>
+<p>In order to add Rocket plugins to your server, you need to simply download the DLLs from the internet or compile them yourself using Visual Studio. Usually you'll be able to find the DLLs if you dig a bit deeper (checking repository issues, other branches) and then you just need to move these to the <code>Rocket/Plugins</code> folder inside your server directory.</p>
+<h1 id="backups"><a class="header" href="#backups">Backups</a></h1>
+<p>I wanted to have my server saved in an interval of X minutes in a cron, so I can
+have different versions of it saved as the time goes.</p>
+<h2 id="local-backups"><a class="header" href="#local-backups">Local backups</a></h2>
+<p>This version saves the zipped files to a folder called <code>Backups</code> inside the
+server folder.</p>
+<pre><code class="language-py">import zipfile
+import sys
+import datetime
+import calendar
+import logging
+import os
+
+TO_SAVE = [
+    &quot;Rocket&quot;,
+    &quot;Bundles&quot;,
+    &quot;Level&quot;,
+    &quot;Maps&quot;,
+    &quot;Server&quot;,
+    &quot;Players&quot;,
+    &quot;Unturned_Headless_Data&quot;,
+    &quot;Config.json&quot;,
+    &quot;WorkshopDownloadConfig.json&quot;,
+]
+SERVER_FOLDER_PATH = sys.argv[1]
+BACKUP_FOLDER_PATH = f&quot;{SERVER_FOLDER_PATH}/Backups&quot;
+
+if not os.path.exists(BACKUP_FOLDER_PATH):
+    logging.info(f&quot;directory {BACKUP_FOLDER_PATH} does not exist: creating it now&quot;)
+    os.makedirs(BACKUP_FOLDER_PATH)
+
+try:
+    date = datetime.datetime.utcnow()
+    utc_time = calendar.timegm(date.utctimetuple())
+
+    with zipfile.ZipFile(f&quot;{BACKUP_FOLDER_PATH}/{utc_time}.zip&quot;, 'w') as zip_file:
+        for file_name in TO_SAVE:
+            path = f&quot;{SERVER_FOLDER_PATH}/{file_name}&quot;
+
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    for root, dirs, files in os.walk(path):
+                        for file in files:
+                            zip_file.write(os.path.join(root, file))
+                else:
+                    zip_file.write(path)
+            else:
+                logging.error(f&quot;file or directory {file_name} does not exist in {SERVER_FOLDER_PATH}&quot;)
+
+except Exception as e:
+    logging.error(f&quot;Could not backup the server folder: {e}&quot;)
+    raise e
+</code></pre>
+<h2 id="azure-blob-storage-backups"><a class="header" href="#azure-blob-storage-backups">Azure Blob Storage backups</a></h2>
+<p>I've also made a version of it that uploads the content to an Azure Blob
+Storage: </p>
+<pre><code class="language-py">import zipfile
+import sys
+import datetime
+import calendar
+import logging
+import os
+import io
+
+from azure.storage.blob import BlobClient, ContainerClient
+
+def send_to_blob_storage(connection_string, container, blob_name, data):
+    container_client = ContainerClient.from_connection_string(conn_str=connection_string, container_name=container)
+
+    if not container_client.exists():
+        container_client.create_container()
+
+    blob = BlobClient.from_connection_string(conn_str=connection_string, container_name=container, blob_name=blob_name)
+    blob.upload_blob(data)
+
+TO_SAVE = [
+    &quot;Rocket&quot;,
+    &quot;Bundles&quot;,
+    &quot;Level&quot;,
+    &quot;Maps&quot;,
+    &quot;Server&quot;,
+    &quot;Players&quot;,
+    &quot;Unturned_Headless_Data&quot;,
+    &quot;Config.json&quot;,
+    &quot;WorkshopDownloadConfig.json&quot;,
+]
+
+CONNECTION_STRING = os.environ[&quot;AZURE_BLOBSTORAGE_CONNECTION_STRING&quot;]
+CONTAINER = os.environ.get(&quot;AZURE_BLOBSTORAGE_CONTAINER&quot;) or &quot;server-backups&quot;
+SERVER_FOLDER_PATH = sys.argv[1]
+BACKUP_FOLDER_PATH = f&quot;{SERVER_FOLDER_PATH}/Backups&quot;
+TEMP_FILE_PATH = &quot;/tmp/server_backup&quot;
+
+if not os.path.exists(BACKUP_FOLDER_PATH):
+    logging.info(f&quot;directory {BACKUP_FOLDER_PATH} does not exist: creating it now&quot;)
+    os.makedirs(BACKUP_FOLDER_PATH)
+
+try:
+    with zipfile.ZipFile(TEMP_FILE_PATH, &quot;w&quot;) as zip_file:
+        for file_name in TO_SAVE:
+            path = f&quot;{SERVER_FOLDER_PATH}/{file_name}&quot;
+
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    for root, dirs, files in os.walk(path):
+                        for file in files:
+                            zip_file.write(os.path.join(root, file))
+                else:
+                    zip_file.write(path)
+            else:
+                logging.error(f&quot;file or directory {file_name} does not exist in {SERVER_FOLDER_PATH}&quot;)
+
+    date = datetime.datetime.utcnow()
+    utc_time = calendar.timegm(date.utctimetuple())
+
+    with open(TEMP_FILE_PATH, &quot;rb&quot;) as data:
+        filename = f&quot;{utc_time}.zip&quot;
+        send_to_blob_storage(CONNECTION_STRING, CONTAINER, filename, data)
+
+    os.remove(TEMP_FILE_PATH)
+
+    logging.info(f&quot;Succesfully backed {SERVER_FOLDER_PATH} up!&quot;)
+except Exception as e:
+    logging.error(f&quot;Could not back {SERVER_FOLDER_PATH} up: {e}&quot;)
+    raise e
+</code></pre>
+<blockquote>
+<p>Note: This assumes the environment variable <code>AZURE_BLOBSTORAGE_CONNECTION_STRING</code> is
+set.</p>
+</blockquote>
+<h1 id="ending"><a class="header" href="#ending">Ending</a></h1>
+<p>My first attempt of hosting a modded server last weekend ended up a failure. 
+Someone got really mad playing and DDOSed the server. The box actually handled
+the load fine, but for some ironical reason, the server itself got banned from
+BattleEye. From this I could see that hosting a modded Unturned server could
+attract some very annoying playerbase. Since I don't have and won't have any
+DDOS protection in this virtual machine, the approach I'm using now is to host a
+full vanilla server and hopefully attract a &quot;chadder&quot; playerbase, and it's
+working actually well until this moment. </p>
+<p>I hope that you could learn some nice
+tricks about hosting an Unturned server and may get attempted to host one too.</p>
+<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">00:35 Sunday 15 May 2022</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.20/dist/katex.min.js" integrity="sha384-ov99pRO2tAc0JuxTVzf63RHHeQTJ0CIawbDZFiFTzB07aqFZwEu2pz4uzqL+5OPG" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var math = document.querySelectorAll("[class^=katex]");
+    for (var i = 0; i < math.length; i++) {
+      // Convert escaped ampersands before rendering
+      var toRender = math[i].textContent.replace(/&amp;/g, '&');
+      katex.render(toRender, math[i]);
+    }
+}, false)
+</script>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Azure Adventures/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../Development/nix_tensorflow_notebook_env.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Azure Adventures/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../Development/nix_tensorflow_notebook_env.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

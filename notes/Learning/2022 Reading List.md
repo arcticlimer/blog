@@ -11,7 +11,7 @@ title: 2022 Reading List
 # Distributed Systems
 - [ ] Designing Data Intensive Applications
 - [ ] Understanding Distributed Systems
-- [ ] The Art of Immutable ARchitecture
+- [ ] The Art of Immutable Architecture
 
 # Databases
 - [X] NoSQL Distilled
@@ -26,4 +26,4 @@ title: 2022 Reading List
 - [ ] Fahrenheit 451
 - [ ] 1984
 - [X] Brave New World
-- [ ] If on a Winter's Night A Traveller
+- [ ] If on a Winter's Night A Traveler

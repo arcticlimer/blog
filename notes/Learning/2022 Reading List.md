@@ -5,12 +5,12 @@ title: 2022 Reading List
 
 # Elixir
 - [X] Elixir in Action
-- [ ] Designing Elixir Systems with OTP
+- [ ] Designing Elixir Systems with OTP (Reading)
 - [ ] Concurrent Data Processing in Elixir
 
 # Distributed Systems
 - [ ] Designing Data Intensive Applications
-- [ ] Understanding Distributed Systems
+- [ ] Understanding Distributed Systems (Reading)
 - [ ] The Art of Immutable Architecture
 
 # Databases
@@ -19,11 +19,19 @@ title: 2022 Reading List
 
 # Software Engineering
 - [ ] The Clean Coder
+- [ ] Seven Languages in Seven Weeks
 - [ ] A Philosophy of Software Design
+- [ ] Working Effectively with Legacy Code
+- [ ] Software Foundations (Volume 1)
 - [ ] Pro Git
+
+# Algorithms
+- [ ] Grokking Algorithms
+- [ ] Algorithms Illuminated
+- [ ] [Functional Data Structures](https://cs.uwaterloo.ca/~plragde/flaneries/FDS)
 
 # Others
 - [ ] Fahrenheit 451
-- [ ] 1984
+- [ ] 1984 (Reading)
 - [X] Brave New World
 - [ ] If on a Winter's Night A Traveler

@@ -19,6 +19,8 @@ title: 2022 Reading List
 
 # Software Engineering
 - [ ] The Clean Coder
+- [ ] The Programmer's Brain (Reading)
+- [ ] Structure and Interpretation of Computer Programs
 - [ ] Seven Languages in Seven Weeks
 - [ ] A Philosophy of Software Design
 - [ ] Working Effectively with Legacy Code

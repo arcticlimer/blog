@@ -15,7 +15,7 @@ title: 2022 Reading List
 
 # Databases
 - [X] NoSQL Distilled
-- [ ] Database Internals
+- [ ] Database Internals (Reading)
 
 # Software Engineering
 - [ ] The Clean Coder
@@ -32,8 +32,9 @@ title: 2022 Reading List
 - [ ] Algorithms Illuminated
 - [ ] [Functional Data Structures](https://cs.uwaterloo.ca/~plragde/flaneries/FDS)
 
-# Others
+# Literature
 - [ ] Fahrenheit 451
-- [ ] 1984 (Reading)
+- [X] 1984
 - [X] Brave New World
+- [ ] The Great Gatsby
 - [ ] If on a Winter's Night A Traveler

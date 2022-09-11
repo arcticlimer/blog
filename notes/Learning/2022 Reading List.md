@@ -33,7 +33,7 @@ title: 2022 Reading List
 - [ ] [Functional Data Structures](https://cs.uwaterloo.ca/~plragde/flaneries/FDS)
 
 # Literature
-- [ ] Fahrenheit 451
+- [ ] Fahrenheit 451 (Reading)
 - [X] 1984
 - [X] Brave New World
 - [ ] The Great Gatsby

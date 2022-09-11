@@ -1,29 +1,30 @@
 ---
 date: 2022-01-08T23:25
-title: Distraction-Free Setup Using Newsboat And mpv
+title: Distraction-Free Setup Using Newsboat
 ---
 
-# Intro
 Recently I got frustrated from getting distracted by recommendations while
 watching YouTube videos or reading articles. The solution that I've found
 (although not really new) is very elegant. In this post I'll talk about it and
 share system configuration snippets in the *Nix* language.
 
-# Enter Newsboat
-Newsboat is a battle-tested RSS reader that works really well, you can define
+*Newsboat* is a battle-tested RSS reader that works really well, you can define
 and tag URLs of blogs you usually read and it will automatically search for new
 posts and allows you to read them.
 
-# Enter mpv
-Mpv is an awesome libre commandline video player, and it can also leverage of
-*youtube-dl* in order to play videos from YouTube, without the need of opening
-it in your browser.
+**mpv** is an awesome libre commandline video player, and it can also leverage
+of **youtube-dl** in order to play videos from YouTube, without the need of
+opening it in your browser. **glow** and **pandoc** are combined to provide a
+nice reading experience inside newsboat.
 
-## Installing Newsboat and mpv Through Home-Manager
+The following is a sample *home-manager* configuration to use *newsboat*:
+
 ```nix
 { pkgs, ... }:
 let
   mpv = "${pkgs.mpv}/bin/mpv";
+  glow = "${pkgs.glow}/bin/glow";
+  pandoc = "${pkgs.pandoc}/bin/pandoc";
 in
 {
   programs.newsboat = {
@@ -82,6 +83,9 @@ in
       color background        white black
       color article           white black
 
+      html-renderer "${pandoc} --from=html -t markdown_github-raw_html"
+      pager "${glow} --pager --width 72"
+
       # macros
       macro v set browser "${mpv} %u" ; open-in-browser ; set browser "firefox %u" -- "Open video on mpv"
     '';
@@ -91,13 +95,9 @@ in
 Having this setup, you can now just hover a YouTube entry in newsboat and press
 `,v`, and it will open a window playing the video.
 
-<!-- TODO: Add about using pandoc to convert the html source to markdown and -->
-<!-- rendering it using glow -->
-
-# Conclusion
 Now I can open newsboat whenever I want to check if there's any new good media
 to consume, without having to fire up a browser and opening something such as
-YouTube or Blogs.
+YouTube or blogs.
 
 # Resources
 - [Newsboat](https://newsboat.org)

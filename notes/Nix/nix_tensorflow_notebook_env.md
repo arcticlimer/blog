@@ -21,7 +21,7 @@ Tensorflow with CUDA is the great star here, and you have 2 main ways of install
 This post will go with the latter.
 
 ## flake.nix
-```nix 
+```nix
 {
   description = "Tensorflow + CUDA development environment";
 
@@ -69,7 +69,7 @@ using NixOS, you can set the `hardware.opengl.setLdLibraryPath` option to
 manually, if it's not already set.
 
 ## pyproject.toml
-```toml 
+```toml
 [tool.poetry]
 name = "cuda-tensorflow"
 version = "0.1.0"

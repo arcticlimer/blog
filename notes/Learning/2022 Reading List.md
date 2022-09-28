@@ -10,7 +10,7 @@ title: 2022 Reading List
 
 # Distributed Systems
 - [ ] Designing Data Intensive Applications
-- [ ] Understanding Distributed Systems (Reading)
+- [X] Understanding Distributed Systems
 - [ ] The Art of Immutable Architecture
 
 # Databases
@@ -22,7 +22,7 @@ title: 2022 Reading List
 - [ ] The Programmer's Brain (Reading)
 - [ ] Structure and Interpretation of Computer Programs
 - [ ] Seven Languages in Seven Weeks
-- [ ] A Philosophy of Software Design
+- [X] A Philosophy of Software Design
 - [ ] Working Effectively with Legacy Code
 - [ ] Software Foundations (Volume 1)
 - [ ] Pro Git

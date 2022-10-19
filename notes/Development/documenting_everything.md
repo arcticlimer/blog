@@ -5,7 +5,7 @@ title: Documenting Stuff
 
 Recently I've been thinking about why usually my projects or codebases at work
 doesn't have per-function/class documentation or type specs. This seems tricky
-to answer: we just need to right above the function what it does, right? So why
+to answer: we just need to write above the function what it does, right? So why
 is this not happening? I personally don't know. I want to read more about
 documentation per se to have a more solid base on the subject, but right now
 thinking about it we probably spend much more time tweaking and reading our

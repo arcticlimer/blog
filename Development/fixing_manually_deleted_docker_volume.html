@@ -155,7 +155,7 @@ volumes:
 delete your volume in order to clean it using something similar to the following command:</p>
 <pre><code class="language-bash">sudo rm -rf /var/lib/docker/volumes/db-data
 </code></pre>
-<p>And then you proceed to run your containers normally with docker comopse,
+<p>And then you proceed to run your containers normally with docker compose,
 and boom!</p>
 <pre><code class="language-bash">❯ docker compose up
 [+] Running 1/0
@@ -170,8 +170,7 @@ Error response from daemon: open /var/lib/docker/volumes/db-data/_data: no such 
 </code></pre>
 <p>Now it seems that this battle is already won, but surprisingly, when using
 <strong>docker v20.10.21</strong> and <strong>docker-compose v2.14.0</strong>, adding this flag to <code>docker compose up</code> does nothing, the error still persists and no volume is recreated.</p>
-<p>The way that I've solved this is actually pretty stupid, but it works
-flawlessly:</p>
+<p>The way that I've solved this is actually pretty stupid, but it works:</p>
 <pre><code class="language-bash">sudo mkdir -p /var/lib/docker/volumes/db-data/_data
 </code></pre>
 <p>Creating these folders is already enough for <code>docker-compose</code> to continue from

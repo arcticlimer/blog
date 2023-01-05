@@ -34,7 +34,7 @@ delete your volume in order to clean it using something similar to the following
 sudo rm -rf /var/lib/docker/volumes/db-data
 ```
 
-And then you proceed to run your containers normally with docker comopse,
+And then you proceed to run your containers normally with docker compose,
 and boom!
 
 ```bash
@@ -57,8 +57,7 @@ Now it seems that this battle is already won, but surprisingly, when using
 **docker v20.10.21** and **docker-compose v2.14.0**, adding this flag to `docker compose
 up` does nothing, the error still persists and no volume is recreated.
 
-The way that I've solved this is actually pretty stupid, but it works
-flawlessly:
+The way that I've solved this is actually pretty stupid, but it works:
 
 ```bash
 sudo mkdir -p /var/lib/docker/volumes/db-data/_data

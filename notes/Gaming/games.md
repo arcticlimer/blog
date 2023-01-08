@@ -43,6 +43,12 @@ has a realtime action combat between starships. It is really fun to battle
 starships and repair yours during combat, while planning upgrades to your
 starship on the long run.
 
+## Noita
+Noita is a very uncommon game, it features a roguelike perma-death mechanic, has
+the awesome feature of "wand crafting" and is non-linear, you don't just have a
+single goal or boss for the game, you can explore secret areas, go to parallel
+worlds or kill secret bosses.
+
 <!-- ## Caves of Qud -->
 
 # Multiplayer Shooters

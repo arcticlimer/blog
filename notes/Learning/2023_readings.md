@@ -45,10 +45,10 @@ work that can be parallelized and after that introduces `GenStages`.
 being a powerful abstraction to create a consumer-producer architecture, where
 the data flow is managed by the consumers (who ask for the data when needed). 
 
-Later on, the `Flow` library is introduced, while is a library that works almost
-as a drop-in replacement for the `Enum` module and can use your entire
-processing capacities when working on large sequences of data. 
+Later on, the `Flow` library is introduced, which is a library that works almost
+as a drop-in replacement for the `Enum` module and can use your entire CPU
+capacity when working on large sequences of data. 
 
 In the last chapter, the `Broadway` library is shown as a powerful consumer for
-multiple consumers, such as messages brokers *(Kafka, RabbitMQ, SQS)* or even
-other `GenStage` producers already in your codebase.
+multiple kinds of producers, such as messages brokers *(Kafka, RabbitMQ, SQS)*
+or even other `GenStage` producers already in your codebase.

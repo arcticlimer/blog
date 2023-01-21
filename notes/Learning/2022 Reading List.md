@@ -6,7 +6,7 @@ title: 2022 Reading List
 # Elixir
 - [X] Elixir in Action (ISBN: 9781617295027)
 - [ ] Designing Elixir Systems with OTP (Reading) (ISBN: 9781680506617)
-- [ ] Concurrent Data Processing in Elixir (ISBN: 9781680508192)
+- [X] Concurrent Data Processing in Elixir (ISBN: 9781680508192)
 
 # Distributed Systems
 - [ ] Designing Data Intensive Applications (ISBN: 9781449373320)

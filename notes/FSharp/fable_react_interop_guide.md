@@ -16,7 +16,7 @@ and how to use both in order to interoperate F# with an existing React library.
 using existing web solutions in the Javascript ecossystem. It also allows one to
 export libraries that can be called from Javascript code.
 
-As seem in the "[Call JS from
+As seen in "[Call JS from
 Fable](https://fable.io/docs/communicate/js-from-fable.html)", there are
 multiple ways of importing generic JS objects into our project, this document
 will use `ImportAttribute` to import objects.

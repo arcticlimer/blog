@@ -1,0 +1,338 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>HashiCorp Nomad Setup - Vinícius Müller&#x27;s Blog</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><div>Azure Adventures</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Azure Adventures/introduction.html">Introduction</a></li><li class="chapter-item "><a href="../Azure Adventures/unturned_server_saga.html">Unturned Server Saga</a></li></ol></li><li class="chapter-item expanded "><div>Development</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Development/documenting_everything.html">Documenting Stuff</a></li><li class="chapter-item "><a href="../Development/fixing_manually_deleted_docker_volume.html">Fixing manually deleted Docker volume</a></li><li class="chapter-item "><a href="../Development/handling_git_conflicts.html">Solving Merge Conflicts</a></li></ol></li><li class="chapter-item expanded "><div>FSharp</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../FSharp/fable_react_interop_guide.html">Fable + React Interop Guide</a></li></ol></li><li class="chapter-item expanded "><div>Gaming</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Gaming/games.html">Games that I like</a></li></ol></li><li class="chapter-item expanded "><div>Homelab</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Homelab/installing_armbian_tvbox.html">Installing Armbian into an old TV Box</a></li><li class="chapter-item expanded "><a href="../Homelab/setting_up_nomad.html" class="active">HashiCorp Nomad Setup</a></li></ol></li><li class="chapter-item expanded "><div>Learning</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Learning/2022_reading_List.html">2022 Reading List</a></li><li class="chapter-item "><a href="../Learning/2023_readings.html">2023 Readings</a></li><li class="chapter-item "><div>Effective Learning with Anki</div></li><li class="chapter-item "><a href="../Learning/kindle_in_the_digital_age.html">Using a Kindle in the Digital Age</a></li></ol></li><li class="chapter-item expanded "><div>Nix</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Nix/flakes_cheat_sheet.html">Nix Flakes Cheat Sheet</a></li><li class="chapter-item "><a href="../Nix/nix_tensorflow_notebook_env.html">Reproducible Machine Learning Environment With Nix</a></li></ol></li><li class="chapter-item expanded "><div>NixOS</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../NixOS/gpu_passthrough.html">KVM GPU Passthrough</a></li><li class="chapter-item "><a href="../NixOS/hybrid_graphics_nvidia_prime.html">Hybrid Graphics with NVIDIA PRIME</a></li><li class="chapter-item "><a href="../NixOS/kmonad_remappings.html">Elegant Remappings With KMonad</a></li><li class="chapter-item "><a href="../NixOS/recovering_from_broken_boot.html">Recovering from broken bootloader</a></li><li class="chapter-item "><a href="../NixOS/setting_background_image.html">Setting XServer's Background Image</a></li><li class="chapter-item "><a href="../NixOS/zfs_mirror_on_nixos.html">Setting ZFS mirrors up in NixOS</a></li></ol></li><li class="chapter-item expanded "><div>Workflow</div><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../Workflow/dactyl_manuform_experience.html">The Dactyl Manuform Experience</a></li><li class="chapter-item "><a href="../Workflow/newsboat_plus_mpv.html">Distraction-Free Setup Using Newsboat</a></li></ol></li><li class="chapter-item expanded "><a href="../index.html">Introduction</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Vinícius Müller&#x27;s Blog</h1>
+
+                    <div class="right-buttons">
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <p>I like HashiCorp's products, and wanted to try running a cluster with some of
+them in order to learn more about and build stuff using it. The first one on the
+list is Nomad, which this post will cover how to setup it in a single Debian
+node and create a cluster. Most of the commands shown here are aggregated and
+adapted from the referenced HashiCorp documentation pages.</p>
+<h1 id="install-nomad"><a class="header" href="#install-nomad">Install Nomad</a></h1>
+<pre><code class="language-sh"># Add HashiCorp's repository
+sudo apt-get update &amp;&amp; sudo apt-get install wget gpg coreutils wget lsb-release
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo &quot;deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main&quot; | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# Install nomad
+sudo apt-get update &amp;&amp; sudo apt-get install nomad
+
+# Nomad directories and user setup
+sudo mkdir -p /opt/nomad
+sudo useradd --system --home /etc/nomad.d --shell /bin/false nomad
+sudo chown -R nomad /opt/nomad
+
+# Install Docker (optional if you do not pretend to run containers or use podman)
+sudo apt-get install docker.io
+sudo usermod -G docker -a nomad
+</code></pre>
+<p>For post-installation steps, such as setting up CNI plugins or Vagrant, refer to
+the <a href="https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-install#post-installation-steps">official documentation</a>.</p>
+<h1 id="setup-the-nomad-agent-unit"><a class="header" href="#setup-the-nomad-agent-unit">Setup the Nomad Agent Unit</a></h1>
+<p>Add the following content into <code>/etc/systemd/system/nomad.service</code>:</p>
+<pre><code class="language-toml">[Unit]
+Description=Nomad
+Documentation=https://www.nomadproject.io/docs/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+
+# Nomad server should be run as the nomad user. Nomad clients
+# should be run as root
+User=nomad
+Group=nomad
+
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/bin/nomad agent -config /etc/nomad.d
+KillMode=process
+KillSignal=SIGINT
+LimitNOFILE=65536
+LimitNPROC=infinity
+Restart=on-failure
+RestartSec=2
+TasksMax=infinity
+OOMScoreAdjust=-1000
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p>Enable and start the Nomad systemd service by running:</p>
+<pre><code class="language-sh">sudo systemctl enable nomad
+sudo systemctl start nomad
+</code></pre>
+<h1 id="nomad-config"><a class="header" href="#nomad-config">Nomad Config</a></h1>
+<p>Add the following content into <code>/etc/nomad.d/nomad.hcl</code>:</p>
+<pre><code class="language-hcl"># Full configuration options can be found at https://www.nomadproject.io/docs/configuration
+
+datacenter = &quot;dc1&quot;
+
+data_dir = &quot;/opt/nomad&quot;
+bind_addr = &quot;0.0.0.0&quot;
+
+server {
+  enabled = true
+}
+
+client {
+  enabled = true
+}
+</code></pre>
+<h1 id="running-a-job"><a class="header" href="#running-a-job">Running a Job</a></h1>
+<p>Note that this job requires docker to be installed in the host.</p>
+<p>Add the following content in a <code>first-job.nomad</code> file:</p>
+<pre><code class="language-hcl">job &quot;rabbit&quot; {
+  datacenters = [&quot;dc1&quot;]
+
+  group &quot;rabbitmq&quot; {
+    network {
+      port &quot;rabbit&quot; {
+        to = 5672
+      }
+
+      port &quot;management&quot; {
+        to = 15672
+      }
+    }
+
+    task &quot;rabbit&quot; {
+      driver = &quot;docker&quot;
+
+      config {
+        image = &quot;rabbitmq:3-management&quot;
+        ports = [&quot;rabbit&quot;, &quot;management&quot;]
+        auth_soft_fail = true
+      }
+
+      resources {
+        cpu = 500
+        memory = 512
+      }
+    }
+  }
+}
+</code></pre>
+<p>Then do a dry run of the deployment by running <code>nomad job plan first-job.nomad</code>.</p>
+<p>If everything went well, Nomad will tell you it can create the deployment
+succesfully and show you the command to start the process. You can then run this
+command, wait until it finishes and check the results the <code>Jobs</code> section inside
+<a href="127.0.0.1:4646">Nomad's web interface</a>.</p>
+<h1 id="clustering-with-consul"><a class="header" href="#clustering-with-consul">Clustering with Consul</a></h1>
+<p>In order to create a cluster with our own nodes, we will leverage the existing
+Nomad + Consul integration for service discovery. Add the following section to
+every Nomad node you want to connect to the cluster:</p>
+<pre><code class="language-hcl"># Inside the server block, add bootstrap_expect with the number of nodes that
+# you will run in your cluster
+server {
+  bootstrap_expect = 3
+}
+
+consul {
+  # The address to the Consul Agent
+  address = &quot;consul-ip:5000&quot;
+
+  # The service name to register the server and client with Consul
+  server_service_name = &quot;nomad&quot;
+  client_service_name = &quot;nomad-client&quot;
+
+  # Enables automatically registering the services
+  auto_advertise = true
+
+  # Enabling the server and client to bootstrap using consul
+  server_auto_join = true
+  client_auto_join = true
+}
+</code></pre>
+<h1 id="wrapping-up"><a class="header" href="#wrapping-up">Wrapping up</a></h1>
+<p>Nomad is an awesome scheduler and orchestrator, and it is being pretty
+refreshing using its simple API in order to get started learning about
+orchestrators. I hope this post helps some curious readers and my future self
+when setting Nomad up.</p>
+<p>In order to continue learning about Nomad, check <a href="https://developer.hashicorp.com/nomad/docs">HashiCorp's
+docs</a>.</p>
+<h1 id="resources"><a class="header" href="#resources">Resources</a></h1>
+<ul>
+<li><a href="https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-install">Install Nomad</a></li>
+<li><a href="https://developer.hashicorp.com/nomad/tutorials/enterprise/production-deployment-guide-vm-with-consul">Nomad Deployment Guide</a></li>
+<li><a href="https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-run">Start Nomad and Run Your First Job</a></li>
+<li><a href="https://developer.hashicorp.com/nomad/tutorials/manage-clusters/clustering">Connect Nodes into a Cluster</a></li>
+</ul>
+<div class="datetime" style="text-align: center; color: gray; font-style: italic; font-size: 90%;">01:17 Tuesday 07 February 2023</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.css" integrity="sha384-zTROYFVGOfTw7JV7KUu8udsvW2fx4lWOsCEDqhBreBwlHI4ioVRtmIvEThzJHGET" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.20/dist/katex.min.js" integrity="sha384-ov99pRO2tAc0JuxTVzf63RHHeQTJ0CIawbDZFiFTzB07aqFZwEu2pz4uzqL+5OPG" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var math = document.querySelectorAll("[class^=katex]");
+    for (var i = 0; i < math.length; i++) {
+      // Convert escaped ampersands before rendering
+      var toRender = math[i].textContent.replace(/&amp;/g, '&');
+      katex.render(toRender, math[i]);
+    }
+}, false)
+</script>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Homelab/installing_armbian_tvbox.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../Learning/2022_reading_List.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Homelab/installing_armbian_tvbox.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../Learning/2022_reading_List.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

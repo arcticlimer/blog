@@ -4,7 +4,7 @@ title: 2023 Readings
 ---
 
 Instead of making a reading list this year, I will focus on writing summaries
-about books that I've read and keep up piling them up in this page, along with
+about books that I've read and keep piling them up in this page, along with
 the time period in which I've read them.
 
 # The Little Ecto Cookbook (January 2023)
@@ -52,3 +52,55 @@ capacity when working on large sequences of data.
 In the last chapter, the `Broadway` library is shown as a powerful consumer for
 multiple kinds of producers, such as messages brokers *(Kafka, RabbitMQ, SQS)*
 or even other `GenStage` producers already in your codebase.
+
+# Domain Modelling Made Functional (February 2023)
+
+This book by Scott Wlaschin provides a great introduction to the domain driven
+design methodology, covering topics such as bounded contexts, event storming,
+developing a ubiquitous language and focusing on business needs instead of
+implementation details.
+
+Shows how to model business cases by using *algebraic data types*, such as
+product, sum and union types:
+
+```fsharp
+type ProductCode = 
+  | Legacy of int 
+  | V2 of UUID
+```
+
+Types are used to model business workflows in a type-safe way, so that code will
+not compile if someone breaks business logic (make illegal states
+unrepresentable):
+
+```fsharp
+type UnvalidatedUser {
+  name : string
+  age : int
+}
+
+type ValidatedUser {
+  name : string
+  age : int
+}
+
+// validateUser :: UnvalidatedUser -> Result<ValidatedUser, ValidationError>
+let validateUser = ...
+
+// registerUser :: ValidatedUser -> RegisteredUser
+let registerUser = ...
+```
+
+By doing this we can ensure there will be no cases where an unvalidated user
+will be mistakenly passed to the `registerUser` function and the program would
+compile, since the only way to get a `ValidatedUser`, required by the registering
+function would be by validating a user.
+
+Another great point is embracing total instead of partial functions. Exceptions
+greatly complicate control flow and usually result types combined with monadic
+computations lead to much simpler and cleaner code.
+
+The book also introduces the Onion architecture and the idea of creating a pure,
+functional core and bumping I/O to the edges of your architecture, so that your
+business logic makes the decisions and the I/O just executes these decisions,
+leading to very testable code.

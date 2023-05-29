@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>https://viniciusmuler.github.io/blog</id>
+  <id>https://viniciusmuller.github.io/blog</id>
   <title>Vinícius Müller&#x27;s blog</title>
   <updated>2023-05-29T00:00:00+00:00</updated>
   <author>
@@ -8,7 +8,7 @@
   </author>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/hashicorp-nomad-setup.html</id>
+      <id>https://viniciusmuller.github.io/blog/hashicorp-nomad-setup.html</id>
       <title>HashiCorp Nomad Setup</title>
       <updated>2023-02-07T00:00:00+00:00</updated>
       <content type="html">
@@ -196,11 +196,11 @@ docs&lt;/a&gt;.&lt;/p&gt;
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/hashicorp-nomad-setup.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/hashicorp-nomad-setup.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/fable-react-interop-guide.html</id>
+      <id>https://viniciusmuller.github.io/blog/fable-react-interop-guide.html</id>
       <title>Fable + React Interop Guide</title>
       <updated>2023-01-25T00:00:00+00:00</updated>
       <content type="html">
@@ -317,11 +317,11 @@ static member ApiCall() =
 &lt;/code&gt;&lt;/pre&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/fable-react-interop-guide.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/fable-react-interop-guide.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/2023-readings.html</id>
+      <id>https://viniciusmuller.github.io/blog/2023-readings.html</id>
       <title>2023 Readings</title>
       <updated>2023-01-20T00:00:00+00:00</updated>
       <content type="html">
@@ -419,11 +419,11 @@ business logic makes the decisions and the I/O just executes these decisions,
 leading to very testable code.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/2023-readings.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/2023-readings.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/fixing-manually-deleted-docker-volume.html</id>
+      <id>https://viniciusmuller.github.io/blog/fixing-manually-deleted-docker-volume.html</id>
       <title>Fixing manually deleted Docker volume</title>
       <updated>2023-01-04T00:00:00+00:00</updated>
       <content type="html">
@@ -476,11 +476,11 @@ there and run our containers.&lt;/p&gt;
 when wiping volumes, so we don&#x27;t run through this again.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/fixing-manually-deleted-docker-volume.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/fixing-manually-deleted-docker-volume.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/solving-merge-conflicts.html</id>
+      <id>https://viniciusmuller.github.io/blog/solving-merge-conflicts.html</id>
       <title>Solving Merge Conflicts</title>
       <updated>2022-09-20T00:00:00+00:00</updated>
       <content type="html">
@@ -502,11 +502,11 @@ fixing almost the same commits but the overall experience is very incremental
 and smooth.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/solving-merge-conflicts.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/solving-merge-conflicts.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/recovering-from-broken-bootloader.html</id>
+      <id>https://viniciusmuller.github.io/blog/recovering-from-broken-bootloader.html</id>
       <title>Recovering from broken bootloader</title>
       <updated>2022-09-18T00:00:00+00:00</updated>
       <content type="html">
@@ -520,11 +520,11 @@ required packages are already in your nix store and will just fix your
 bootloader.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/recovering-from-broken-bootloader.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/recovering-from-broken-bootloader.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/setting-zfs-mirrors-up-in-nixos.html</id>
+      <id>https://viniciusmuller.github.io/blog/setting-zfs-mirrors-up-in-nixos.html</id>
       <title>Setting ZFS mirrors up in NixOS</title>
       <updated>2022-09-13T00:00:00+00:00</updated>
       <content type="html">
@@ -640,11 +640,11 @@ directory name are the same.&lt;/p&gt;
 &lt;p&gt;Now whenever you need to access your files, just log in using this user.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/setting-zfs-mirrors-up-in-nixos.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/setting-zfs-mirrors-up-in-nixos.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/games-that-i-like.html</id>
+      <id>https://viniciusmuller.github.io/blog/games-that-i-like.html</id>
       <title>Games that I like</title>
       <updated>2022-09-07T00:00:00+00:00</updated>
       <content type="html">
@@ -724,11 +724,11 @@ play something with them, it usually ends up being something such as &lt;strong&
 played casually, but usually they have pretty toxic playerbases.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/games-that-i-like.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/games-that-i-like.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/2022-reading-list.html</id>
+      <id>https://viniciusmuller.github.io/blog/2022-reading-list.html</id>
       <title>2022 Reading List</title>
       <updated>2022-07-24T00:00:00+00:00</updated>
       <content type="html">
@@ -800,11 +800,11 @@ played casually, but usually they have pretty toxic playerbases.&lt;/p&gt;
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/2022-reading-list.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/2022-reading-list.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/using-a-kindle-in-the-digital-age.html</id>
+      <id>https://viniciusmuller.github.io/blog/using-a-kindle-in-the-digital-age.html</id>
       <title>Using a Kindle in the Digital Age</title>
       <updated>2022-07-24T00:00:00+00:00</updated>
       <content type="html">
@@ -823,11 +823,11 @@ really feel like I &lt;strong&gt;want&lt;/strong&gt; to read books instead of wa
 activities such as using the cellphone in bed.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/using-a-kindle-in-the-digital-age.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/using-a-kindle-in-the-digital-age.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/installing-armbian-into-an-old-tv-box.html</id>
+      <id>https://viniciusmuller.github.io/blog/installing-armbian-into-an-old-tv-box.html</id>
       <title>Installing Armbian into an old TV Box</title>
       <updated>2022-07-24T00:00:00+00:00</updated>
       <content type="html">
@@ -853,11 +853,11 @@ other versions than &lt;em&gt;bullseye&lt;/em&gt; might make Wi-Fi work.&lt;/li&
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/installing-armbian-into-an-old-tv-box.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/installing-armbian-into-an-old-tv-box.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/documenting-stuff.html</id>
+      <id>https://viniciusmuller.github.io/blog/documenting-stuff.html</id>
       <title>Documenting Stuff</title>
       <updated>2022-07-24T00:00:00+00:00</updated>
       <content type="html">
@@ -889,11 +889,11 @@ end
 &lt;/code&gt;&lt;/pre&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/documenting-stuff.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/documenting-stuff.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/the-dactyl-manuform-experience.html</id>
+      <id>https://viniciusmuller.github.io/blog/the-dactyl-manuform-experience.html</id>
       <title>The Dactyl Manuform Experience</title>
       <updated>2022-07-24T00:00:00+00:00</updated>
       <content type="html">
@@ -911,11 +911,11 @@ considering before, which would easily cost more than 500$ after taxes in Brazil
 &lt;p&gt;After two months of use, the keyboard is still holding strong and is very comfortable to type with. 10/10 would recommend.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/the-dactyl-manuform-experience.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/the-dactyl-manuform-experience.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/introduction.html</id>
+      <id>https://viniciusmuller.github.io/blog/introduction.html</id>
       <title>Introduction</title>
       <updated>2022-05-17T00:00:00+00:00</updated>
       <content type="html">
@@ -924,11 +924,11 @@ that gives us 150$ monthly Azure credits, I&#x27;ll use these credits to tinker 
 different stuff involving cloud computing and post some notes about them here.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/introduction.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/introduction.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/unturned-server-saga.html</id>
+      <id>https://viniciusmuller.github.io/blog/unturned-server-saga.html</id>
       <title>Unturned Server Saga</title>
       <updated>2022-05-15T00:00:00+00:00</updated>
       <content type="html">
@@ -1199,11 +1199,11 @@ working actually well until this moment.&lt;/p&gt;
 tricks about hosting an Unturned server and may get attempted to host one too.&lt;/p&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/unturned-server-saga.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/unturned-server-saga.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/distraction-free-setup-using-newsboat.html</id>
+      <id>https://viniciusmuller.github.io/blog/distraction-free-setup-using-newsboat.html</id>
       <title>Distraction-Free Setup Using Newsboat</title>
       <updated>2022-01-08T00:00:00+00:00</updated>
       <content type="html">
@@ -1308,11 +1308,11 @@ YouTube or blogs.&lt;/p&gt;
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/distraction-free-setup-using-newsboat.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/distraction-free-setup-using-newsboat.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/nix-flakes-cheat-sheet.html</id>
+      <id>https://viniciusmuller.github.io/blog/nix-flakes-cheat-sheet.html</id>
       <title>Nix Flakes Cheat Sheet</title>
       <updated>2021-10-31T00:00:00+00:00</updated>
       <content type="html">
@@ -1439,11 +1439,11 @@ specified update all the inputs.&lt;/li&gt;
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/nix-flakes-cheat-sheet.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/nix-flakes-cheat-sheet.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/setting-xserver-s-background-image.html</id>
+      <id>https://viniciusmuller.github.io/blog/setting-xserver-s-background-image.html</id>
       <title>Setting XServer&#x27;s Background Image</title>
       <updated>2021-10-30T00:00:00+00:00</updated>
       <content type="html">
@@ -1461,11 +1461,11 @@ want to customize it furthermore, you can check the options available in the
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/setting-xserver-s-background-image.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/setting-xserver-s-background-image.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/kvm-gpu-passthrough.html</id>
+      <id>https://viniciusmuller.github.io/blog/kvm-gpu-passthrough.html</id>
       <title>KVM GPU Passthrough</title>
       <updated>2021-10-29T00:00:00+00:00</updated>
       <content type="html">
@@ -2141,11 +2141,11 @@ in
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/kvm-gpu-passthrough.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/kvm-gpu-passthrough.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/hybrid-graphics-with-nvidia-prime.html</id>
+      <id>https://viniciusmuller.github.io/blog/hybrid-graphics-with-nvidia-prime.html</id>
       <title>Hybrid Graphics with NVIDIA PRIME</title>
       <updated>2021-10-27T00:00:00+00:00</updated>
       <content type="html">
@@ -2344,11 +2344,11 @@ issue and remember myself about it if I ever need to change it again.&lt;/p&gt;
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/hybrid-graphics-with-nvidia-prime.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/hybrid-graphics-with-nvidia-prime.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/elegant-remappings-with-kmonad.html</id>
+      <id>https://viniciusmuller.github.io/blog/elegant-remappings-with-kmonad.html</id>
       <title>Elegant Remappings With KMonad</title>
       <updated>2021-10-26T00:00:00+00:00</updated>
       <content type="html">
@@ -2504,11 +2504,11 @@ and add the tilde (grv) in place of the original &lt;code&gt;esc&lt;/code&gt;.&l
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/elegant-remappings-with-kmonad.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/elegant-remappings-with-kmonad.html" rel="alternate" />
     </entry>
   
     <entry>
-      <id>https://viniciusmuler.github.io/blog/reproducible-machine-learning-environment-with-nix.html</id>
+      <id>https://viniciusmuller.github.io/blog/reproducible-machine-learning-environment-with-nix.html</id>
       <title>Reproducible Machine Learning Environment With Nix</title>
       <updated>2021-01-09T00:00:00+00:00</updated>
       <content type="html">
@@ -2626,7 +2626,7 @@ build-backend = &amp;quot;poetry.core.masonry.api&amp;quot;
 &lt;/ul&gt;
 
       </content>
-      <link href="https://viniciusmuler.github.io/blog/reproducible-machine-learning-environment-with-nix.html" rel="alternate" />
+      <link href="https://viniciusmuller.github.io/blog/reproducible-machine-learning-environment-with-nix.html" rel="alternate" />
     </entry>
   
 </feed>

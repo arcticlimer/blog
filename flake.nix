@@ -3,46 +3,29 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    mdzk.url = "github:mdzk-rs/mdzk";
+    pageturtle.url = "github:viniciusmuller/pageturtle";
   };
 
-  outputs = { self, flake-utils, mdzk, nixpkgs }:
+  outputs = { self, flake-utils, pageturtle, nixpkgs }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
+        pageturtle-pkg = pageturtle.defaultPackage.${system};
         pkgs = nixpkgs.legacyPackages.${system};
-        mdzk-bin = mdzk.defaultPackage.${system};
-        mdbook-toc = pkgs.rustPlatform.buildRustPackage rec {
-          pname = "mdbook-toc";
-          version = "0.7.0";
-          src = pkgs.fetchFromGitHub {
-            owner = "badboy";
-            repo = pname;
-            rev = version;
-            sha256 = "sha256-k8OcdWmOQGruUMD/tUoqKLpuRLaWi4Sli/pL905/KA8=";
-          };
-          cargoSha256 = "sha256-IH5316yKTjY8s3VCwaHGmdlzJRmnS0QOfR8vybH64rg=";
-        };
       in
       rec {
         devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            mdzk-bin
-            mdbook-toc
-          ];
+          buildInputs = with pkgs; [ pageturtle-pkg ];
         };
         defaultPackage = pkgs.stdenv.mkDerivation {
           name = "personal-notes";
           src = ./.;
-          buildPhase = "mdzk build";
+          buildPhase = "pageturtle build";
           installPhase = ''
-            mkdir -p $out/book
-            cp -r ./book/* $out/book
+            mkdir -p $out/dist
+            cp -r ./dist/* $out/dist
           '';
-          buildInputs = [
-            mdzk-bin 
-            mdbook-toc
-          ];
+          buildInputs = [ pageturtle-pkg ];
         };
       }
     );

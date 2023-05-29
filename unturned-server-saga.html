@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+  <title>Unturned Server Saga - Vinícius Müller's blog</title>
+
+  <head>
+    <link rel="stylesheet" href="https://viniciusmuler.github.io/blog/styles.css"></link>
+    
+  </head>
+
+  <body>
+    
+    <nav class="bg-gray-200 w-full px-4 py-2">
+      <div class="w-full flex">
+          <div class="flex mr-auto space-x-6">
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/index.html">Home</a>
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/tags.html">Tags</a>
+
+            <!-- <button> -->
+            <!--   Search -->
+            <!-- </button> -->
+
+            
+          </div>
+
+          <div class="flex space-x-6">
+            
+              <a class="text-black font-bold hover:underline" href="https://github.com/viniciusmuller">GitHub</a>
+            
+
+            
+              <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/atom.xml">RSS</a>
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main class="p-4 w-full flex justify-center">
+      <div class="w-[40vw]">
+        
+  <div class="flex flex-col items-center">
+    <article class='prose my-8'>
+      <h1 class="!mb-2">
+        Unturned Server Saga
+      </h1>
+
+      <p>
+        <span class="font-bold">
+          Vinícius Müller
+        </span> on May 15, 2022
+      </p>
+
+      <div class="space-x-4">
+        
+      </div>
+
+      
+      
+
+      <div class="mt-8">
+        <!-- raw HTML omitted -->
+
+          <a class="no-underline" href="#intro">
+              <h1 id="intro" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Intro</h1></a>
+<p>Some years ago I used to have a lot of fun in weekends with some friends playing <a href="https://store.steampowered.com/app/304930/Unturned/">Unturned</a>. It's a really funny game that I like to call the &quot;poor man's Rust&quot;, cause it's free and has an incredibly funny and rust-like mechanic in PVP.
+I've always used to say to them that some day I would host an Unturned server
+and we would have a lot of fun playing and managing it. Since I've got some spare Azure credits, why not hosting one in some port of my virtual machine?</p>
+
+          <a class="no-underline" href="#hosting">
+              <h1 id="hosting" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Hosting</h1></a>
+
+          <a class="no-underline" href="#simple-setup">
+              <h2 id="simple-setup" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Simple Setup</h2></a>
+<p>For a simple setup, you can follow <a href="https://blog.yat1ma30.com/posts/host-dedicated-unturned-server">this guide</a> and then just use the <code>ServerHelper.sh</code> script inside the game's folder to start your server.</p>
+
+          <a class="no-underline" href="#hosting-more-than-one-server-in-the-same-host">
+              <h2 id="hosting-more-than-one-server-in-the-same-host" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Hosting more than one server in the same host</h2></a>
+<p>If you want a fancier setup to do something like tinkering and restarting a second server while people play at your main one, you will need the following scripts:</p>
+
+          <a class="no-underline" href="#start-sh">
+              <h3 id="start-sh" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        start.sh</h3></a>
+<pre><code class="language-sh">$unturned_dir = ~/unturned
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`dirname $0`/Unturned_Headless_Data/Plugins/x86_64/
+cp -f $unturned_dir/linux64/steamclient.so $unturned_dir/Unturned_Headless_Data/Plugins/x86_64/steamclient.so
+
+# ~/steamcmd/steamcmd.sh +login anonymous +force_install_dir $unturned_dir +app_update 1110390 validate +exit
+mkdir -p $unturned_dir/linux64
+yes | cp -rf ~/steamcmd/linux64/steamclient.so $unturned_dir
+yes | cp -rf ~/steamcmd/linux64/steamclient.so $unturned_dir/linux64/
+
+# Terminal mode compatible with -logfile 2&gt;&amp;1 IO.
+export TERM=xterm
+
+# Run the server binary.
+# -batchmode and -nographics are Unity player arguments.
+# -logfile 2&gt;&amp;1 can be used to pipe IO to/from the terminal.
+# &quot;$@&quot; appends any command-line arguments passed to this script.
+./Unturned_Headless.x86_64 -batchmode -nographics -ThreadedConsole &quot;$@&quot;
+</code></pre>
+
+          <a class="no-underline" href="#update-sh">
+              <h3 id="update-sh" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        update.sh</h3></a>
+<pre><code class="language-sh">md5sum ~/steamcmd/linux32/steamclient.so
+md5sum ~/steamcmd/linux64/steamclient.so
+
+mkdir -p ~/steamcmd/
+cd ~/steamcmd/
+curl -sqL &quot;https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz&quot; | tar zxvf -
+chmod +x steamcmd.sh
+./steamcmd.sh +quit
+
+# Fix libraries
+sudo rm -fv /lib/steamclient.so
+sudo rm -fv /lib64/steamclient.so
+sudo ln -s ~/steamcmd/linux32/steamclient.so /lib/steamclient.so
+sudo ln -s ~/steamcmd/linux64/steamclient.so /lib64/steamclient.so
+
+md5sum ~/steamcmd/linux32/steamclient.so
+md5sum ~/steamcmd/linux64/steamclient.so
+</code></pre>
+<p>These are based on the scripts shared in <a href="https://github.com/SmartlyDressedGames/Unturned-3.x-Community/issues/1622#issuecomment-640060882">this commentary</a>.</p>
+
+          <a class="no-underline" href="#server-configuration">
+              <h1 id="server-configuration" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Server Configuration</h1></a>
+
+          <a class="no-underline" href="#workshop-mods">
+              <h2 id="workshop-mods" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Workshop Mods</h2></a>
+<p>Adding mods is as simple as editing <code>WorkshopDownloaderConfig.json</code> and adding the mods' ids (you can copy them from the URL) and pasting them inside the <code>File_IDs</code> array.</p>
+<pre><code class="language-json">{
+  &quot;File_IDs&quot;: [],
+  &quot;Ignore_Children_File_IDs&quot;: [],
+  &quot;Query_Cache_Max_Age_Seconds&quot;: 600,
+  &quot;Max_Query_Retries&quot;: 2,
+  &quot;Use_Cached_Downloads&quot;: true,
+  &quot;Should_Monitor_Updates&quot;: true,
+  &quot;Shutdown_Update_Detected_Timer&quot;: 600,
+  &quot;Shutdown_Update_Detected_Message&quot;: &quot;Workshop file update detected, shutdown in: {0}&quot;
+}
+</code></pre>
+
+          <a class="no-underline" href="#rocket">
+              <h2 id="rocket" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Rocket</h2></a>
+<p>Rocket gives you a really nice framework to setup command permissions, server configurations and others. In order to add it to your game, you should move the Rocket assets into the <code>Modules</code> folder in your game root directory.</p>
+
+          <a class="no-underline" href="#rocket-plugins">
+              <h2 id="rocket-plugins" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Rocket Plugins</h2></a>
+<p>In order to add Rocket plugins to your server, you need to simply download the DLLs from the internet or compile them yourself using Visual Studio. Usually you'll be able to find the DLLs if you dig a bit deeper (checking repository issues, other branches) and then you just need to move these to the <code>Rocket/Plugins</code> folder inside your server directory.</p>
+
+          <a class="no-underline" href="#backups">
+              <h1 id="backups" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Backups</h1></a>
+<p>I wanted to have my server saved in an interval of X minutes in a cron, so I can
+have different versions of it saved as the time goes.</p>
+
+          <a class="no-underline" href="#local-backups">
+              <h2 id="local-backups" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Local backups</h2></a>
+<p>This version saves the zipped files to a folder called <code>Backups</code> inside the
+server folder.</p>
+<pre><code class="language-py">import zipfile
+import sys
+import datetime
+import calendar
+import logging
+import os
+
+TO_SAVE = [
+    &quot;Rocket&quot;,
+    &quot;Bundles&quot;,
+    &quot;Level&quot;,
+    &quot;Maps&quot;,
+    &quot;Server&quot;,
+    &quot;Players&quot;,
+    &quot;Unturned_Headless_Data&quot;,
+    &quot;Config.json&quot;,
+    &quot;WorkshopDownloadConfig.json&quot;,
+]
+SERVER_FOLDER_PATH = sys.argv[1]
+BACKUP_FOLDER_PATH = f&quot;{SERVER_FOLDER_PATH}/Backups&quot;
+
+if not os.path.exists(BACKUP_FOLDER_PATH):
+    logging.info(f&quot;directory {BACKUP_FOLDER_PATH} does not exist: creating it now&quot;)
+    os.makedirs(BACKUP_FOLDER_PATH)
+
+try:
+    date = datetime.datetime.utcnow()
+    utc_time = calendar.timegm(date.utctimetuple())
+
+    with zipfile.ZipFile(f&quot;{BACKUP_FOLDER_PATH}/{utc_time}.zip&quot;, 'w') as zip_file:
+        for file_name in TO_SAVE:
+            path = f&quot;{SERVER_FOLDER_PATH}/{file_name}&quot;
+
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    for root, dirs, files in os.walk(path):
+                        for file in files:
+                            zip_file.write(os.path.join(root, file))
+                else:
+                    zip_file.write(path)
+            else:
+                logging.error(f&quot;file or directory {file_name} does not exist in {SERVER_FOLDER_PATH}&quot;)
+
+except Exception as e:
+    logging.error(f&quot;Could not backup the server folder: {e}&quot;)
+    raise e
+</code></pre>
+
+          <a class="no-underline" href="#azure-blob-storage-backups">
+              <h2 id="azure-blob-storage-backups" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Azure Blob Storage backups</h2></a>
+<p>I've also made a version of it that uploads the content to an Azure Blob
+Storage:</p>
+<pre><code class="language-py">import zipfile
+import sys
+import datetime
+import calendar
+import logging
+import os
+import io
+
+from azure.storage.blob import BlobClient, ContainerClient
+
+def send_to_blob_storage(connection_string, container, blob_name, data):
+    container_client = ContainerClient.from_connection_string(conn_str=connection_string, container_name=container)
+
+    if not container_client.exists():
+        container_client.create_container()
+
+    blob = BlobClient.from_connection_string(conn_str=connection_string, container_name=container, blob_name=blob_name)
+    blob.upload_blob(data)
+
+TO_SAVE = [
+    &quot;Rocket&quot;,
+    &quot;Bundles&quot;,
+    &quot;Level&quot;,
+    &quot;Maps&quot;,
+    &quot;Server&quot;,
+    &quot;Players&quot;,
+    &quot;Unturned_Headless_Data&quot;,
+    &quot;Config.json&quot;,
+    &quot;WorkshopDownloadConfig.json&quot;,
+]
+
+CONNECTION_STRING = os.environ[&quot;AZURE_BLOBSTORAGE_CONNECTION_STRING&quot;]
+CONTAINER = os.environ.get(&quot;AZURE_BLOBSTORAGE_CONTAINER&quot;) or &quot;server-backups&quot;
+SERVER_FOLDER_PATH = sys.argv[1]
+BACKUP_FOLDER_PATH = f&quot;{SERVER_FOLDER_PATH}/Backups&quot;
+TEMP_FILE_PATH = &quot;/tmp/server_backup&quot;
+
+if not os.path.exists(BACKUP_FOLDER_PATH):
+    logging.info(f&quot;directory {BACKUP_FOLDER_PATH} does not exist: creating it now&quot;)
+    os.makedirs(BACKUP_FOLDER_PATH)
+
+try:
+    with zipfile.ZipFile(TEMP_FILE_PATH, &quot;w&quot;) as zip_file:
+        for file_name in TO_SAVE:
+            path = f&quot;{SERVER_FOLDER_PATH}/{file_name}&quot;
+
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    for root, dirs, files in os.walk(path):
+                        for file in files:
+                            zip_file.write(os.path.join(root, file))
+                else:
+                    zip_file.write(path)
+            else:
+                logging.error(f&quot;file or directory {file_name} does not exist in {SERVER_FOLDER_PATH}&quot;)
+
+    date = datetime.datetime.utcnow()
+    utc_time = calendar.timegm(date.utctimetuple())
+
+    with open(TEMP_FILE_PATH, &quot;rb&quot;) as data:
+        filename = f&quot;{utc_time}.zip&quot;
+        send_to_blob_storage(CONNECTION_STRING, CONTAINER, filename, data)
+
+    os.remove(TEMP_FILE_PATH)
+
+    logging.info(f&quot;Succesfully backed {SERVER_FOLDER_PATH} up!&quot;)
+except Exception as e:
+    logging.error(f&quot;Could not back {SERVER_FOLDER_PATH} up: {e}&quot;)
+    raise e
+</code></pre>
+<blockquote>
+<p>Note: This assumes the environment variable <code>AZURE_BLOBSTORAGE_CONNECTION_STRING</code> is
+set.</p>
+</blockquote>
+
+          <a class="no-underline" href="#ending">
+              <h1 id="ending" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Ending</h1></a>
+<p>My first attempt of hosting a modded server last weekend ended up a failure.
+Someone got really mad playing and DDOSed the server. The box actually handled
+the load fine, but for some ironical reason, the server itself got banned from
+BattleEye. From this I could see that hosting a modded Unturned server could
+attract some very annoying playerbase. Since I don't have and won't have any
+DDOS protection in this virtual machine, the approach I'm using now is to host a
+full vanilla server and hopefully attract a &quot;chadder&quot; playerbase, and it's
+working actually well until this moment.</p>
+<p>I hope that you could learn some nice
+tricks about hosting an Unturned server and may get attempted to host one too.</p>
+
+      </div>
+    </article>
+  <div>
+
+      </div>
+    </main>
+  </body>
+</html>

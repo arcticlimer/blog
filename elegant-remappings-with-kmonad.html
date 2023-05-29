@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <title>Elegant Remappings With KMonad - Vinícius Müller's blog</title>
+
+  <head>
+    <link rel="stylesheet" href="https://viniciusmuler.github.io/blog/styles.css"></link>
+    
+  </head>
+
+  <body>
+    
+    <nav class="bg-gray-200 w-full px-4 py-2">
+      <div class="w-full flex">
+          <div class="flex mr-auto space-x-6">
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/index.html">Home</a>
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/tags.html">Tags</a>
+
+            <!-- <button> -->
+            <!--   Search -->
+            <!-- </button> -->
+
+            
+          </div>
+
+          <div class="flex space-x-6">
+            
+              <a class="text-black font-bold hover:underline" href="https://github.com/viniciusmuller">GitHub</a>
+            
+
+            
+              <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/atom.xml">RSS</a>
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main class="p-4 w-full flex justify-center">
+      <div class="w-[40vw]">
+        
+  <div class="flex flex-col items-center">
+    <article class='prose my-8'>
+      <h1 class="!mb-2">
+        Elegant Remappings With KMonad
+      </h1>
+
+      <p>
+        <span class="font-bold">
+          Vinícius Müller
+        </span> on October 26, 2021
+      </p>
+
+      <div class="space-x-4">
+        
+      </div>
+
+      
+      
+
+      <div class="mt-8">
+        
+          <a class="no-underline" href="#table-of-contents">
+              <h1 id="table-of-contents" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Table of Contents</h1></a>
+<!-- raw HTML omitted -->
+
+          <a class="no-underline" href="#intro">
+              <h1 id="intro" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Intro</h1></a>
+<p>I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
+failing to achieve my goals with <code>xmodmap</code> and others, I was sure there had to
+be a better solution, and then I've found KMonad.</p>
+
+          <a class="no-underline" href="#what-is-kmonad">
+              <h1 id="what-is-kmonad" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        What is KMonad?</h1></a>
+<p>KMonad is a multiplatform key remapping software which uses a lisp-like
+declarative configuration language.</p>
+
+          <a class="no-underline" href="#why-use-kmonad">
+              <h1 id="why-use-kmonad" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Why use KMonad?</h1></a>
+<p>Once you get used to it, KMonad provides a pretty stable experience and a sweet
+way to configure your key remappings.</p>
+
+          <a class="no-underline" href="#pros">
+              <h2 id="pros" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Pros</h2></a>
+<ul>
+<li>It works in a system-wide manner, so it doesn't matter whether you are inside
+a TTY rescuing your computer or relaxing inside your X session, your
+key remappings will work.</li>
+<li>It's pretty easy to define configurations for multiple keyboards and switch
+between them.</li>
+<li>It works. Seriously. I cannot stress this enough, I've spent a lot of time
+using programs to detect the keycodes that my keyboard was emitting and
+writing some cryptic commands inside <code>xmodmap</code>'s <code>.xkb</code> files (and guess what,
+it didn't worked). With KMonad I literally draw my keyboard in ASCII
+and change the characters' placement. And it works.</li>
+<li>It supports some fancy stuff such as macros, layers, composite characters, the
+ability to run shell commands when pressing a key, etc...</li>
+</ul>
+
+          <a class="no-underline" href="#cons">
+              <h2 id="cons" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Cons</h2></a>
+<ul>
+<li>It has a steep learning curve, and you probably will need to read their ~1000
+lines lisp-like file tutorial to start using it.</li>
+<li>You still need to change a few lines in your configuration files in order to
+make them run in another platform.</li>
+</ul>
+
+          <a class="no-underline" href="#using-kmonad-with-nixos">
+              <h1 id="using-kmonad-with-nixos" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Using KMonad with NixOS</h1></a>
+<p>Since KMonad is still not available directly into NixOS as a system module, the
+current way to use KMonad is through <a href="https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos">their own NixOS module</a>.</p>
+
+          <a class="no-underline" href="#the-nix-derivation">
+              <h2 id="the-nix-derivation" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        The Nix Derivation</h2></a>
+<p>With these settings, KMonad should already start along with your NixOS system.</p>
+<pre><code class="language-nix">{ pkgs, ... }:
+
+let
+  # The KMonad derivation (binary)
+  kmonad = (import ../../pkgs/kmonad/derivation.nix) pkgs;
+in
+{
+  imports = [
+    # The KMonad NixOS module
+    ./kmonad.nix
+  ];
+
+  services.kmonad = {
+    enable = true;
+    configfiles = [ ../../pkgs/kmonad/configs/ck61.kbd ];
+    package = kmonad;
+  };
+
+  services.xserver = {
+    xkbOptions = &quot;compose:ralt&quot;;
+    layout = &quot;us&quot;;
+  };
+
+  users.extraUsers.your_username = {
+    extraGroups = [ &quot;input&quot; &quot;uinput&quot; ];
+  };
+}
+</code></pre>
+<p>For more details about this Nix snippet, check the KMonad section about Nix and
+the docs of their NixOS module.</p>
+
+          <a class="no-underline" href="#the-kmonad-config">
+              <h2 id="the-kmonad-config" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        The KMonad Config</h2></a>
+<p>My current keyboard is a <code>Motospeed CK61</code>. It has a pretty good quality, but a
+terrible usability. It has a confusing layer system, which kills any possibility
+of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
+or <code>F1-F12</code> keys quickly. Also, it doesn't have the tilde (yes, you've read that
+right, there is not way to make a beautiful <code>~</code> by pressing a key). I mostly use
+KMonad to fix these keyboard quirks, this is a relevant part of my current configuration:</p>
+<pre><code class="language-lisp">(defsrc
+  esc  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt cmp  rctl
+)
+
+(deflayer base
+  grv   _    _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _    _    _
+  esc   _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _
+  lmet  lctl _              _              lalt rctl @ext
+)
+
+(deflayer extra
+  _    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  _
+  _    _    up   _    _    _    _    _    _    _    _    ssrq @pau _
+  _    left down rght _    _    _    _    ins  home pgup pgdn _
+  _    _    _    _    _    _    _    _    del  end  _    @mat
+  _    _    _              _              _    _    @bas
+)
+</code></pre>
+<p>You can see how I use it to create a new layer to make arrows and others usable,
+turn <code>right-alt</code> into <code>left-alt</code> (<code>ralt</code> does not behave correctly when using
+the <code>us(intl)</code> layout), change <code>ctrl</code> keys position, turn <code>caps lock</code> into <code>esc</code>
+and add the tilde (grv) in place of the original <code>esc</code>.</p>
+
+          <a class="no-underline" href="#resources">
+              <h1 id="resources" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Resources</h1></a>
+<ul>
+<li><a href="https://github.com/kmonad/kmonad">KMonad's GitHub Page</a></li>
+<li><a href="https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd">KMonad's Tutorial</a></li>
+<li><a href="https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd">My KMonad configuration</a></li>
+</ul>
+
+      </div>
+    </article>
+  <div>
+
+      </div>
+    </main>
+  </body>
+</html>

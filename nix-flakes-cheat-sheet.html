@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <title>Nix Flakes Cheat Sheet - Vinícius Müller's blog</title>
+
+  <head>
+    <link rel="stylesheet" href="https://viniciusmuler.github.io/blog/styles.css"></link>
+    
+  </head>
+
+  <body>
+    
+    <nav class="bg-gray-200 w-full px-4 py-2">
+      <div class="w-full flex">
+          <div class="flex mr-auto space-x-6">
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/index.html">Home</a>
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/tags.html">Tags</a>
+
+            <!-- <button> -->
+            <!--   Search -->
+            <!-- </button> -->
+
+            
+          </div>
+
+          <div class="flex space-x-6">
+            
+              <a class="text-black font-bold hover:underline" href="https://github.com/viniciusmuller">GitHub</a>
+            
+
+            
+              <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/atom.xml">RSS</a>
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main class="p-4 w-full flex justify-center">
+      <div class="w-[40vw]">
+        
+  <div class="flex flex-col items-center">
+    <article class='prose my-8'>
+      <h1 class="!mb-2">
+        Nix Flakes Cheat Sheet
+      </h1>
+
+      <p>
+        <span class="font-bold">
+          Vinícius Müller
+        </span> on October 31, 2021
+      </p>
+
+      <div class="space-x-4">
+        
+      </div>
+
+      
+          <div class="my-8">
+            <h2>Table of contents</h2>
+
+
+  <ul class="!mb-1">
+  <a href="#attributes">
+    <li class="leading-4">
+      Attributes
+      
+    </li>
+  </a>
+</ul>
+
+  <ul class="!mb-1">
+  <a href="#commands">
+    <li class="leading-4">
+      Commands
+      
+    </li>
+  </a>
+</ul>
+
+  <ul class="!mb-1">
+  <a href="#examples">
+    <li class="leading-4">
+      Examples
+      
+        <ul class="!mb-1">
+  <a href="#plain-flake-with-package-devshell">
+    <li class="leading-4">
+      Plain Flake with Package + Devshell
+      
+    </li>
+  </a>
+</ul>
+      
+    </li>
+  </a>
+</ul>
+
+  <ul class="!mb-1">
+  <a href="#using-flake-utils">
+    <li class="leading-4">
+      Using Flake-Utils
+      
+    </li>
+  </a>
+</ul>
+
+  <ul class="!mb-1">
+  <a href="#resources">
+    <li class="leading-4">
+      Resources
+      
+    </li>
+  </a>
+</ul>
+
+          </div>
+
+        
+
+      <div class="mt-8">
+        
+          <a class="no-underline" href="#attributes">
+              <h1 id="attributes" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Attributes</h1></a>
+<pre><code class="language-nix"># Commonly used options. For full list, check https://nixos.wiki/wiki/Flakes
+{
+  description: &quot;&quot;; # String describing the flake.
+
+  inputs = { # Set containing all the dependencies of the flake.
+    &lt;flake&gt;.url = &quot;&quot;; # URL pointing to the flake.
+    &lt;flake&gt;.flake = true; # Set this to `false` if the repository is not a flake.
+  };
+
+  outputs = { # Set containing all the outputs of the flake.
+    checks.&lt;system&gt;.&lt;name&gt; = {}; # Derivation describing a check ran by `nix flake check`.
+    packages.&lt;system&gt;.&lt;name&gt; = {}; # Derivation which can be built with `nix build .#&lt;name&gt;`.
+    defaultPackage.&lt;system&gt; = {}; # Derivation which is built by `nix build .`.
+    apps.&lt;system&gt;.&lt;name&gt; = {}; # Set describing an app which can be run by `nix run .#&lt;name&gt;`;
+    defaultApp.&lt;system&gt; = {}; # Derivation which is ran by `nix run .`.
+    devShell.&lt;system&gt; = {}; # Used by `nix develop`
+    devShells.&lt;system&gt;.&lt;name&gt; = {}; # Used by `nix develop .#&lt;name&gt;`
+  };
+}
+</code></pre>
+
+          <a class="no-underline" href="#commands">
+              <h1 id="commands" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Commands</h1></a>
+<ul>
+<li><code>nix develop</code>: Enter the flake's <code>devShell</code>.</li>
+<li><code>nix build</code>: Builds a derivation of the flake. If no derivation is
+specified, it will try to build <strong>defaultPackage</strong>. Specify which derivation
+to build with <code>nix build .#&lt;derivation&gt;</code></li>
+<li><code>nix run</code>: Builds a derivation and run the result binary.</li>
+<li><code>nix flake check</code>: Checks wether the flake builds and pass its tests.</li>
+<li><code>nix flake update [flake-url]</code>: Update flake input. If <code>flake-url</code> is not
+specified update all the inputs.</li>
+<li><code>nix flake info</code>: Show info about the flake.</li>
+</ul>
+
+          <a class="no-underline" href="#examples">
+              <h1 id="examples" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Examples</h1></a>
+
+          <a class="no-underline" href="#plain-flake-with-package-devshell">
+              <h2 id="plain-flake-with-package-devshell" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Plain Flake with Package + Devshell</h2></a>
+<pre><code class="language-nix">{
+  description = &quot;Single-platform flake without external dependencies&quot;;
+
+  outputs = { self, nixpkgs }:
+    let 
+      platform = &quot;x86_64-linux&quot;;
+      pkgs = nixpkgs.legacyPackages.${platform};
+    in {
+    devShell.${platform} = pkgs.mkShell {
+      buildInputs = with pkgs; [
+        hello
+      ];
+    };
+    defaultPackage.${platform} = pkgs.stdenv.mkDerivation {
+      name = &quot;dummy-derivation&quot;;
+      src = ./.;
+      buildPhase = &quot;echo 'echo helloworld!' &gt; program&quot;;
+      installPhase = ''
+        mkdir -p $out/bin
+        chmod +x ./program
+        cp ./program $out/bin/dummy-derivation
+      '';
+    };
+  };
+}
+</code></pre>
+
+          <a class="no-underline" href="#using-flake-utils">
+              <h2 id="using-flake-utils" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Using Flake-Utils</h2></a>
+<pre><code class="language-nix">{
+  description = &quot;Multiplatform flake using flake-utils&quot;;
+
+  inputs.flake-utils.url = &quot;github:numtide/flake-utils&quot;;
+
+  outputs = { self, flake-utils, nixpkgs }:
+    flake-utils.lib.eachDefaultSystem (
+      system: 
+      let 
+        pkgs = nixpkgs.legacyPackages.${system};
+      in rec {
+        devShell = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            hello
+          ];
+        };
+        defaultPackage = pkgs.stdenv.mkDerivation {
+          name = &quot;dummy-derivation&quot;;
+          src = ./.;
+          buildPhase = &quot;echo 'echo helloworld!' &gt; program&quot;;
+          installPhase = ''
+            mkdir -p $out/bin
+            chmod +x ./program
+            cp ./program $out/bin/dummy-derivation
+          '';
+        };
+      }
+    );
+}
+</code></pre>
+
+          <a class="no-underline" href="#resources">
+              <h1 id="resources" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Resources</h1></a>
+<ul>
+<li><a href="https://nixos.wiki/wiki/Flakes">NixOS Wiki page on Flakes</a></li>
+<li><a href="https://nixos.wiki/wiki/Nix_command/flake">NixOS Wiki page on Flakes Commands</a></li>
+</ul>
+
+      </div>
+    </article>
+  <div>
+
+      </div>
+    </main>
+  </body>
+</html>

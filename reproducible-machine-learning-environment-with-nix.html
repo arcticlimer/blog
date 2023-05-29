@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <title>Reproducible Machine Learning Environment With Nix - Vinícius Müller's blog</title>
+
+  <head>
+    <link rel="stylesheet" href="https://viniciusmuler.github.io/blog/styles.css"></link>
+    
+  </head>
+
+  <body>
+    
+    <nav class="bg-gray-200 w-full px-4 py-2">
+      <div class="w-full flex">
+          <div class="flex mr-auto space-x-6">
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/index.html">Home</a>
+            <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/tags.html">Tags</a>
+
+            <!-- <button> -->
+            <!--   Search -->
+            <!-- </button> -->
+
+            
+          </div>
+
+          <div class="flex space-x-6">
+            
+              <a class="text-black font-bold hover:underline" href="https://github.com/viniciusmuller">GitHub</a>
+            
+
+            
+              <a class="text-black font-bold hover:underline" href="https://viniciusmuler.github.io/blog/atom.xml">RSS</a>
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main class="p-4 w-full flex justify-center">
+      <div class="w-[40vw]">
+        
+  <div class="flex flex-col items-center">
+    <article class='prose my-8'>
+      <h1 class="!mb-2">
+        Reproducible Machine Learning Environment With Nix
+      </h1>
+
+      <p>
+        <span class="font-bold">
+          Vinícius Müller
+        </span> on January 9, 2021
+      </p>
+
+      <div class="space-x-4">
+        
+      </div>
+
+      
+      
+
+      <div class="mt-8">
+        <!-- raw HTML omitted -->
+
+          <a class="no-underline" href="#intro">
+              <h1 id="intro" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Intro</h1></a>
+<p>Recently I've been tinkering with machine learning, and wanted to have a local
+reproducible <em>Python</em> development environment which supports GPU. This post is meant to
+share the resulting <em>Nix</em> and <em>poetry</em> configs.</p>
+
+          <a class="no-underline" href="#creating-the-environment">
+              <h1 id="creating-the-environment" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Creating The Environment</h1></a>
+
+          <a class="no-underline" href="#installing-tensorflow">
+              <h2 id="installing-tensorflow" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Installing Tensorflow</h2></a>
+<p>Tensorflow with CUDA is the great star here, and you have 2 main ways of installing it using <em>Nix</em>:</p>
+<ul>
+<li>Building <code>tensorflow-gpu</code> from source, which uses a lot of computational
+resources and time.</li>
+<li>Downloading the required <strong>CUDA</strong> libraries and adding them to your
+<code>$LD_LIBRARY_PATH</code>.</li>
+</ul>
+<p>This post will go with the latter.</p>
+
+          <a class="no-underline" href="#flake-nix">
+              <h2 id="flake-nix" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        flake.nix</h2></a>
+<pre><code class="language-nix">{
+  description = &quot;Tensorflow + CUDA development environment&quot;;
+
+  inputs.flake-utils.url = &quot;github:numtide/flake-utils&quot;;
+  inputs.nixpkgs.url = &quot;github:NixOS/nixpkgs&quot;;
+  inputs.poetry2nix.url = &quot;github:nix-community/poetry2nix&quot;;
+
+  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
+    {
+      # Nixpkgs overlay providing the application
+      overlay = nixpkgs.lib.composeManyExtensions [
+        poetry2nix.overlay
+        (final: prev: {
+          pythonEnv = prev.poetry2nix.mkPoetryEnv {
+            projectDir = ./.;
+            preferWheels = true;
+          };
+        })
+      ];
+    } // (flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ self.overlay ];
+          config.allowUnfree = true;
+        };
+      in
+      rec {
+        devShell = pkgs.mkShell {
+          name = &quot;tf-dev-environment&quot;;
+          nativeBuildInputs = [ pkgs.poetry ];
+
+          shellHook = ''
+            export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.cudatoolkit_11}/lib:${pkgs.cudnn_cudatoolkit_11}/lib:${pkgs.cudatoolkit_11.lib}/lib:$LD_LIBRARY_PATH
+
+            alias jupyter=&quot;poetry run jupyter&quot;
+          '';
+        };
+    }));
+}
+</code></pre>
+<p>Note that this assumes OpenGL libraries in your <code>$LD_LIBRARY_PATH</code>. If you're
+using NixOS, you can set the <code>hardware.opengl.setLdLibraryPath</code> option to
+<code>true</code>.  On other distros, you might be able to use <em>nixGL</em> or set the path
+manually, if it's not already set.</p>
+
+          <a class="no-underline" href="#pyproject-toml">
+              <h2 id="pyproject-toml" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        pyproject.toml</h2></a>
+<pre><code class="language-toml">[tool.poetry]
+name = &quot;cuda-tensorflow&quot;
+version = &quot;0.1.0&quot;
+description = &quot;&quot;
+authors = [&quot;Your Name &lt;you@example.com&gt;&quot;]
+
+[tool.poetry.dependencies]
+python = &quot;&gt;=3.9,&lt;3.11&quot;
+tf-nightly = &quot;^2.9.0-alpha.20220109&quot;
+keras = &quot;^2.7.0&quot;
+numpy = &quot;^1.22.0&quot;
+matplotlib = &quot;^3.5.1&quot;
+jupyter = &quot;^1.0.0&quot;
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = [&quot;poetry-core&gt;=1.0.0&quot;]
+build-backend = &quot;poetry.core.masonry.api&quot;
+</code></pre>
+<p>Notice: Depending on when you find this, you might need to update these dependencies.</p>
+
+          <a class="no-underline" href="#resources">
+              <h1 id="resources" class="group relative">
+              <span class="hidden group-hover:inline absolute -left-8">#</span>
+        Resources</h1></a>
+<ul>
+<li><a href="https://nixos.wiki/wiki/Tensorflow">NixOS Wiki page on Tensorflow</a></li>
+<li><a href="https://github.com/nix-community/poetry2nix">poetry2nix</a></li>
+</ul>
+
+      </div>
+    </article>
+  <div>
+
+      </div>
+    </main>
+  </body>
+</html>

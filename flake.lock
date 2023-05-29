@@ -51,11 +51,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1685328577,
-        "narHash": "sha256-1rFEzVFf00Hf46r7DPF9C5DZaqPkPc0qTfRdVHoWaTI=",
+        "lastModified": 1685332464,
+        "narHash": "sha256-7aO0dlRaLpjtyS1VzUxQel9/diUQ+x31kKw5pMmOsK8=",
         "owner": "viniciusmuller",
         "repo": "pageturtle",
-        "rev": "c3f5c849460017459b880cdfb073c8230a13c414",
+        "rev": "e999f5e4d7c4000b33c91d1eb2b46af5ec6ca42a",
         "type": "github"
       },
       "original": {

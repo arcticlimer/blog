@@ -1,10 +1,9 @@
 ---
 date: 2021-10-26
 title: Elegant Remappings With KMonad
+categories:
+- NixOS
 ---
-
-# Table of Contents
-<!-- toc -->
 
 # Intro
 I've already had a lot of headaches trying to remap keys on Linux/NixOS. After

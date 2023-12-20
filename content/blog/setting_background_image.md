@@ -1,6 +1,8 @@
 ---
 date: 2021-10-30
 title: Setting XServer's Background Image
+categories:
+- NixOS
 ---
 
 If you have NixOS managing your XServer's session you can easily set your

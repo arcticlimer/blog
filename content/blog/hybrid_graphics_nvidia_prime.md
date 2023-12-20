@@ -1,10 +1,9 @@
 ---
 date: 2021-10-27
 title: Hybrid Graphics with NVIDIA PRIME
+categories:
+- NixOS
 ---
-
-# Table of Contents
-<!-- toc -->
 
 # Intro
 I've spent some time trying to setup hybrid graphics on NixOS and managed to get

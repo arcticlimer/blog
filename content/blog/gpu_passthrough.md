@@ -1,7 +1,8 @@
 ---
 date: 2021-10-29
 title: KVM GPU Passthrough
-table_of_contents: true
+categories:
+- NixOS
 ---
 
 # Intro

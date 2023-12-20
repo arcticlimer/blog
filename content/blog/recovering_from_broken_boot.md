@@ -1,6 +1,8 @@
 ---
 date: 2022-09-18
 title: Recovering from broken bootloader
+categories:
+- NixOS
 ---
 
 NixOS provides some really nice properties, such as the ability to rollback your

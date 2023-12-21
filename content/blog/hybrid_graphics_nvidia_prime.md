@@ -21,7 +21,7 @@ The relevant setup for this post includes:
 > Note: I have not tested this in other machines, maybe some changes will be
 > necessary for this to run in other kinds of hardware.
 
-# NixOS Configuration
+## NixOS Configuration
 Below is the necessary NixOS configuration to get it up and running. The
 relevant parts will be covered next.
 
@@ -73,7 +73,7 @@ in
 }
 ```
 
-## Offload Script
+### Offload Script
 ```nix
 let
   nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''

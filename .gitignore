@@ -8,4 +8,7 @@ hugo_stats.json
 /.hugo_build.lock
 
 # Nix related
+result
 .direnv/
+# theme is symlinked by nix
+themes/anubis

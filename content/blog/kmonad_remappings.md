@@ -5,20 +5,20 @@ categories:
 - NixOS
 ---
 
-# Intro
+## Intro
 I've already had a lot of headaches trying to remap keys on Linux/NixOS. After
 failing to achieve my goals with `xmodmap` and others, I was sure there had to
 be a better solution, and then I've found KMonad.
 
-# What is KMonad?
+## What is KMonad?
 KMonad is a multiplatform key remapping software which uses a lisp-like
 declarative configuration language.
 
-# Why use KMonad?
+## Why use KMonad?
 Once you get used to it, KMonad provides a pretty stable experience and a sweet
 way to configure your key remappings.
 
-## Pros
+### Pros
 - It works in a system-wide manner, so it doesn't matter whether you are inside
   a TTY rescuing your computer or relaxing inside your X session, your
   key remappings will work.
@@ -32,17 +32,17 @@ way to configure your key remappings.
 - It supports some fancy stuff such as macros, layers, composite characters, the
   ability to run shell commands when pressing a key, etc...
 
-## Cons
+### Cons
 - It has a steep learning curve, and you probably will need to read their ~1000
   lines lisp-like file tutorial to start using it.
 - You still need to change a few lines in your configuration files in order to
   make them run in another platform.
 
-# Using KMonad with NixOS
+## Using KMonad with NixOS
 Since KMonad is still not available directly into NixOS as a system module, the
 current way to use KMonad is through [their own NixOS module](https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos).
 
-## The Nix Derivation
+### The Nix Derivation
 With these settings, KMonad should already start along with your NixOS system.
 
 ```nix
@@ -78,7 +78,7 @@ in
 For more details about this Nix snippet, check the KMonad section about Nix and
 the docs of their NixOS module.
 
-## The KMonad Config
+### The KMonad Config
 My current keyboard is a `Motospeed CK61`. It has a pretty good quality, but a
 terrible usability. It has a confusing layer system, which kills any possibility
 of using the arrow keys, some miscellaneous keys (home, end, page up, etc...),
@@ -117,7 +117,7 @@ turn `right-alt` into `left-alt` (`ralt` does not behave correctly when using
 the `us(intl)` layout), change `ctrl` keys position, turn `caps lock` into `esc`
 and add the tilde (grv) in place of the original `esc`.
 
-# Resources
+## Resources
 - [KMonad's GitHub Page](https://github.com/kmonad/kmonad)
 - [KMonad's Tutorial](https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd)
 - [My KMonad configuration](https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd)

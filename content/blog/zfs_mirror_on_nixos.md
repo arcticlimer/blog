@@ -3,12 +3,12 @@ date: 2022-09-13
 title: Setting ZFS mirrors up in NixOS
 ---
 
-# ZFS
+## ZFS
 
 ZFS is a modern file system that works with pool of different devices and allows
 for redudancy, efficient snapshots, compression and deduplication.
 
-# Setup
+## Setup
 
 > Warning: When experimenting with different partitioning schemas, if you happen
 > to create any pool or dataset using `zpool create` or `zfs create`, remember
@@ -58,7 +58,7 @@ boot.loader.grub.devices = [ "/dev/sda" "/dev/sdb" ];
 
 Now if one of the disks die you will still be able to boot into your system.
 
-# Replacing devices
+## Replacing devices
 
 Just a few days after doing the first installation, one of the hard drives being
 used died. It was surprisingly easy to repair my mirror using some ZFS magic.
@@ -89,7 +89,7 @@ zpool replace <pool> <device_id> <new_device_path>
 Then ZFS will start the resilvering process and your mirror will be ready again
 some time later.
 
-# Samba
+## Samba
 
 Samba allows the server to be easily usable from both Windows and Linux clients.
 

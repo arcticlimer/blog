@@ -1,0 +1,32 @@
+languageCode: "en-us"
+baseUrl: "https://viniciusmuller.github.io/blog"
+title: "Vinícius Müller's Blog"
+theme: "anubis"
+enableRobotsTXT: true
+
+params:
+  author: "Vinícius Müller"
+  # email: mail@example.org # used for microformats
+  # avatar: "/images/me.png" # used for microformats
+  description: "description"
+  # Uncomment if you need this
+  # images:
+  #   - images/og-featured.png # relative path to "static" directory
+  dateFormat: "2006-01-02"
+  paginationSinglePost: true
+  style: light-without-switcher
+  mainSections: [ "blog" ] # which sections should be on index/main page
+  sectionsWithFullContentOnListPage: [ "notes" ] # for which sections content should be displayed on list pages
+  readMore: false # show read more button
+  readNextPosts: 5  # show 5 related posts, 0 by default
+  disableSummary: true
+  toc: true # display Table of Contents
+  tocWordCount: 200 # ...when a post is longer than 300 words
+  copyCodeButton: true # true by default
+  rssAsSocialIcon: true
+  mathjax: false # https://www.mathjax.org/
+  social:
+  - id: github
+    name: viniciusmuller
+  - id: email
+    name: vinigm.nho@gmail.com

@@ -11,7 +11,7 @@ scattered around the internet.
 This document aims to provide a solid getting started to both Fable and Feliz,
 and how to use both in order to interoperate F# with an existing React library.
 
-# Fable
+## Fable
 [Fable](https://fable.io/) is a library that allows one to write F# code while
 using existing web solutions in the Javascript ecossystem. It also allows one to
 export libraries that can be called from Javascript code.
@@ -52,7 +52,7 @@ let myObject: Interface = jsNative
 // Now we can use myObject directly from JS in a type-safe way
 ```
 
-# Feliz
+## Feliz
 
 [Feliz](https://zaid-ajaj.github.io/Feliz/) is a library used to directly
 interface React, adding the ability to create new type-safe components directly
@@ -89,7 +89,7 @@ static member Markdown(children: string, remarkPlugins: obj seq) = React.importe
 > when dealing with named exports, import should receive the name of the
 > exported value.
 
-# Asynchronous F# Code in Feliz
+## Asynchronous F# Code in Feliz
 Since callbacks can be asynchronous, we use React's `useEffect` to execute
 our asynchronous F# code and set the data that we need using `useState`.
 
@@ -108,7 +108,7 @@ static member ApiCall() =
 
     React.useEffect(fetchProducts, [| |])
 
-    let productElements = List.map products (fun p -> 
+    let productElements = List.map products (fun p ->
       Html.div [
         Html.h2 [
           prop.text p.name

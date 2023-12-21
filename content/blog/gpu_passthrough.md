@@ -5,7 +5,7 @@ categories:
 - NixOS
 ---
 
-# Intro
+## Intro
 Recently I wanted to run a Windows virtual machine from NixOS that has access to
 my GPU, mostly for gaming. This post will cover from enabling the necessary
 kernel options and crafting a NixOS configuration to setting a Windows VM up and
@@ -15,7 +15,7 @@ making it able to use the GPU and other peripherals.
 > mostly as a guide to the author itself, although it is supposed to help any
 > people with a similar hardware setup trying to GPU passthrough on NixOS.
 
-# Hardware
+## Hardware
 This is my relevant hardware information for this post. It's worth noting that I
 only have **one dedicated GPU** and **one integrated GPU**. This post is mainly
 meant for people in that same situation.
@@ -26,19 +26,19 @@ meant for people in that same situation.
 - Dedicated GPU: `NVIDIA GTX 1070`
 - Integrated GPU: `Intel HD Graphics 630`
 
-# Requirements
+## Requirements
 - You must have the `VT-D` feature enabled inside your BIOS
 - [Your hardware must support IOMMU](https://en.wikipedia.org/wiki/List_of_IOMMU-supporting_hardware)
 - You must have a spare GPU device.
 
-# Setup
+## Setup
 
-## Isolating the GPU
+### Isolating the GPU
 In this section we will isolate the graphics card from the host so that we can
 pass it through without any issues.
 > Note: This section assumes that you are going to passthrough a NVDIA GPU.
 
-### Setting Integrated Graphics as Output
+#### Setting Integrated Graphics as Output
 > Note: This section is only valid if you only have only one **GPU** and one
 > **iGPU**.
 
@@ -49,7 +49,7 @@ the default output display to the integrated graphics.
 > motherboard as the input to your monitor, otherwise you will be locked without
 > graphics.
 
-### Enabling IOMMU
+#### Enabling IOMMU
 Inside your NixOS configuration, add:
 ```nix
 boot.kernelParams = [
@@ -63,7 +63,7 @@ boot.kernelParams = [
 ```
 Then rebuild and reboot your system.
 
-### Identifying IOMMU Devices
+#### Identifying IOMMU Devices
 You can use the following snippet to identify your IOMMU devices:
 ```sh
 shopt -s nullglob
@@ -83,7 +83,7 @@ Output example:
 IOMMU Group 1 01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GP104 [GeForce GTX 1070] [10de:1b81] (rev a1)
 ```
 
-### Configuring the NixOS Host
+#### Configuring the NixOS Host
 Add the following to your NixOS configuration:
 
 ```nix
@@ -130,9 +130,9 @@ worked by running the following:
 ```
 The output should be similar to this (note the `add [10de:1b81...` line).
 
-## Installing the Guest OS
+### Installing the Guest OS
 
-### NixOS Virtualization Setup
+#### NixOS Virtualization Setup
 ```nix
 virtualisation.libvirtd = {
   enable = true;
@@ -150,7 +150,7 @@ environment.systemPackages = with pkgs; [
 ```
 
 
-### Installation
+#### Installation
 > This part assumes you are going to install Windows inside the box.
 - Download the Windows ISO of your liking (This post was tested using Windows 10).
 - Move the ISO to `/var/lib/libvirt/images` so that we don't get permission
@@ -169,7 +169,7 @@ environment.systemPackages = with pkgs; [
 > installation, just type exit, navigate to **Boot Manager** and boot into the
 > desired device.
 
-## PCI Passthrough
+### PCI Passthrough
 
 - Remove these virtual device sections in box's the XML config:
   ```xml
@@ -214,7 +214,7 @@ environment.systemPackages = with pkgs; [
   GPU output to check if it's working. You should see your Windows box normally
   on your screen.
 
-## Keyboard/Mouse support
+### Keyboard/Mouse support
 Add to your box configuration, inside the `<devices>` section:
 ```xml
 <input type="evdev">
@@ -227,7 +227,7 @@ Add to your box configuration, inside the `<devices>` section:
 <input type="keyboard" bus="virtio" />
 ```
 
-### Tips
+#### Tips
 - The devices must have "event" in their name.
 - To check whether a device is the correct, `cat` it and use the device, you
   should see some gibberish being printed into the shell that `cat` is
@@ -238,12 +238,12 @@ keyboard and mouse inside it. In order to swap the keyboard and mouse between
 host and the guest, press both **left control** and **right control** at the
 same time.
 
-## IVSHMEM Support
+### IVSHMEM Support
 > Note: This section is only useful if you are going to use either [Scream with IVSHMEM](#scream--ivshmem) or [Looking Glass](#looking-glass).
 
 - Inside your Windows box's **Device Manager**, go to **System Devices** and select **PCI standard RAM Controller**, then update it with [RedHat's IVSHMEM drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/) (preferentially v0.1-161+).
 
-## KMonad Support
+### KMonad Support
 
 If you are using [[Elegant remappings with KMonad | KMonad]], you will notice
 that it grabs your keyboard's `udev` device and it won't output anything while
@@ -275,13 +275,13 @@ input that KMonad created we can provide it inside the VM's XML file:
 </input>
 ```
 
-## Audio Support
+### Audio Support
 At this point you should already have a working Windows box which can see and
 use your GPU, but it probably doesn't have any sound output.
 
-### Scream + Bridged Network
+#### Scream + Bridged Network
 
-#### Host Setup
+##### Host Setup
 - Set the network device to **Bridge Device** and **Device name** to your
   virtual bridge, usually **virbr0**.
 - Inside your NixOS configuration, add:
@@ -299,7 +299,7 @@ use your GPU, but it probably doesn't have any sound output.
   ```
   Then rebuild your system.
 
-#### Guest Setup
+##### Guest Setup
 - Download and install [VirtIO drivers](https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/#virtio-win-direct-downloads) ([virtio-win-iso](https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md)).
 - Download and Install [Scream](https://github.com/duncanthrax/scream/releases/).
   > Note: If you previously had setup [Scream with IVSHMEM](#scream--ivshmem),
@@ -313,11 +313,11 @@ You should now be able to hear the guest's audio on your host.
 > scream-network.service`.
 
 <!-- TODO: Install VirtIO drivers on guest and try again to make scream work via network -->
-### Scream + IVSHMEM
+#### Scream + IVSHMEM
 > Note: Setting up Scream with **IVSHMEM** is not the preferred way of doing it,
 > and probably will have more disadvantages than advantages.
 
-#### Host Setup
+##### Host Setup
   - Add the following to your NixOS configuration and rebuild it:
     ```nix
      # Pipewire + pulseaudio support (you can also use just pulseaudio)
@@ -361,12 +361,12 @@ You should now be able to hear the guest's audio on your host.
 
 You should now be able to hear the guest's audio on your host.
 
-## Video support
-### Looking Glass
+### Video support
+#### Looking Glass
 Looking Glass enables us to view our box graphical output from our XServer
 session.
 
-#### Host Setup
+##### Host Setup
 
 - Add this to your NixOS configuration:
   ```nix
@@ -407,7 +407,7 @@ session.
   See [Looking Glass' documentation](https://looking-glass.io/docs/stable/install/#determining-memory) in order to calculate how much memory you should give to Looking Glass (although 32M should handle most of the cases).
 
 
-#### Guest Setup
+##### Guest Setup
 Inside your Windows box, you will need to:
 - [Add IVSHMEM support](#ivshmem-support).
 - [Download and install `Looking Glass (host)`](https://looking-glass.io/downloads).
@@ -416,20 +416,20 @@ You should now be able to run something like `looking-glass-client -s no -F -f /
 
 > Note: The version of both your Looking Glass client and host applications must match.
 
-## USB Support
+### USB Support
 If you need to use your USBs to wire up say a pendrive or an external HD, you
 can easily plug them into your PC and pass them to your guest through the **Add
 Hardware** button inside the box's details.
 
-## Partition Support
+### Partition Support
 To passthorugh native partitions, create them on your host, then inside the **Add
 Hardware** menu, select **Storage**, uncheck **Create a disk image for the
 virtual machine**, check **Select or create custom storage** and add the path do
 your partition inside the input (e.g: `/dev/sdb2`).
 
-# Performance Improvements
+## Performance Improvements
 
-## Changing number of CPU cores
+### Changing number of CPU cores
 I've initially had some trouble with poor CPU performance, In order to improve
 it I went into the **CPUs** section inside the box's details and checked
 **Manually set CPU topology**, from here you can increase the number of real
@@ -437,7 +437,7 @@ cores working with the VM.
 
 <!-- ## CPU Pinning -->
 
-# Conclusion
+## Conclusion
 While tinkering with and learning more about `VFIO` and `QEMU`/`libvirt`, I've
 managed to find an interesting virtual machine workflow:
 - Audio: Scream + Bridged Network.
@@ -448,7 +448,7 @@ managed to find an interesting virtual machine workflow:
   device as my keyboard device.
 - Storage: I've installed Windows in a small QEMU virtual disk inside my SSD for
   faster initialization and added another QEMU virtual storage (which is inside
-  my HD) for storing data. 
+  my HD) for storing data.
 
 The experience has been much greater than dual boot, since I can just open
 Looking Glass and use Windows as if it were just another workspace in my window
@@ -544,7 +544,7 @@ in
 }
 ```
 
-# Resources
+## Resources
 - [Arch Wiki's PCI Passthrough Article](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF)
 - [Notes on PCI Passthrough on NixOS using QEMU and VFIO](https://alexbakker.me/post/nixos-pci-passthrough-qemu-vfio.html)
 - [Scream Project](https://github.com/duncanthrax/scream)

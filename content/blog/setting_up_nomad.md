@@ -2,7 +2,7 @@
 date: 2023-02-07
 title: HashiCorp Nomad Setup
 tags: [hashicorp, nomad]
-table_of_contents: true
+toc: true
 ---
 
 I like HashiCorp's products, and wanted to try running a cluster with some of
@@ -11,9 +11,9 @@ list is Nomad, which this post will cover how to setup it in a single Debian
 node and create a cluster. Most of the commands shown here are aggregated and
 adapted from the referenced HashiCorp documentation pages.
 
-# Install Nomad
+## Install Nomad
 
-```sh 
+```sh
 # Add HashiCorp's repository
 sudo apt-get update && sudo apt-get install wget gpg coreutils wget lsb-release
 wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -35,7 +35,7 @@ sudo usermod -G docker -a nomad
 For post-installation steps, such as setting up CNI plugins or Vagrant, refer to
 the [official documentation](https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-install#post-installation-steps).
 
-# Setup the Nomad Agent Unit
+## Setup the Nomad Agent Unit
 
 
 Add the following content into `/etc/systemd/system/nomad.service`:
@@ -76,7 +76,7 @@ sudo systemctl enable nomad
 sudo systemctl start nomad
 ```
 
-# Nomad Config
+## Nomad Config
 
 Add the following content into `/etc/nomad.d/nomad.hcl`:
 
@@ -97,7 +97,7 @@ client {
 }
 ```
 
-# Running a Job
+## Running a Job
 
 Note that this job requires docker to be installed in the host.
 
@@ -143,7 +143,7 @@ succesfully and show you the command to start the process. You can then run this
 command, wait until it finishes and check the results the `Jobs` section inside
 [Nomad's web interface](127.0.0.1:4646).
 
-# Clustering with Consul
+## Clustering with Consul
 
 In order to create a cluster with our own nodes, we will leverage the existing
 Nomad + Consul integration for service discovery. Add the following section to
@@ -173,7 +173,7 @@ consul {
 }
 ```
 
-# Wrapping up
+## Wrapping up
 
 Nomad is an awesome scheduler and orchestrator, and it is being pretty
 refreshing using its simple API in order to get started learning about
@@ -183,7 +183,7 @@ when setting Nomad up.
 In order to continue learning about Nomad, check [HashiCorp's
 docs](https://developer.hashicorp.com/nomad/docs).
 
-# Resources
+## Resources
 - [Install Nomad](https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-install)
 - [Nomad Deployment Guide](https://developer.hashicorp.com/nomad/tutorials/enterprise/production-deployment-guide-vm-with-consul)
 - [Start Nomad and Run Your First Job](https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-run)

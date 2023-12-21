@@ -21,7 +21,7 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [ hugo ];
           shellHook = ''
-          ln -s ${anubis-theme} $(pwd)/themes/anubis
+          ln -sfn ${anubis-theme} $(pwd)/themes/anubis
           '';
         };
         defaultPackage = pkgs.stdenv.mkDerivation {

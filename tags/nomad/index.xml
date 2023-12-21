@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>nomad on Vinícius Müller&#39;s Blog</title>
+    <link>https://viniciusmuller.github.io/blog/tags/nomad/</link>
+    <description>Vinícius Müller&#39;s Blog (nomad)</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 07 Feb 2023 00:00:00 +0000</lastBuildDate>
+    
+    <atom:link href="https://viniciusmuller.github.io/blog/tags/nomad/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>HashiCorp Nomad Setup</title>
+      <link>https://viniciusmuller.github.io/blog/blog/setting_up_nomad/</link>
+      <pubDate>Tue, 07 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://viniciusmuller.github.io/blog/blog/setting_up_nomad/</guid>
+      <description>&lt;p&gt;I like HashiCorp&amp;rsquo;s products, and wanted to try running a cluster with some of
+them in order to learn more about and build stuff using it. The first one on the
+list is Nomad, which this post will cover how to setup it in a single Debian
+node and create a cluster. Most of the commands shown here are aggregated and
+adapted from the referenced HashiCorp documentation pages.&lt;/p&gt;
+&lt;h2 id=&#34;install-nomad&#34; &gt;Install Nomad
+&lt;span&gt;
+    &lt;a href=&#34;#install-nomad&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Add HashiCorp&amp;#39;s repository&lt;/span&gt;
+sudo apt-get update &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; sudo apt-get install wget gpg coreutils wget lsb-release
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com &lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;lsb_release -cs&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt; main&amp;#34;&lt;/span&gt; | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Install nomad&lt;/span&gt;
+sudo apt-get update &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; sudo apt-get install nomad
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Nomad directories and user setup&lt;/span&gt;
+sudo mkdir -p /opt/nomad
+sudo useradd --system --home /etc/nomad.d --shell /bin/false nomad
+sudo chown -R nomad /opt/nomad
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Install Docker (optional if you do not pretend to run containers or use podman)&lt;/span&gt;
+sudo apt-get install docker.io
+sudo usermod -G docker -a nomad
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For post-installation steps, such as setting up CNI plugins or Vagrant, refer to
+the &lt;a href=&#34;https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-install#post-installation-steps&#34;&gt;official documentation&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;setup-the-nomad-agent-unit&#34; &gt;Setup the Nomad Agent Unit
+&lt;span&gt;
+    &lt;a href=&#34;#setup-the-nomad-agent-unit&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Add the following content into &lt;code&gt;/etc/systemd/system/nomad.service&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-toml&#34; data-lang=&#34;toml&#34;&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;Unit&lt;/span&gt;]
+&lt;span style=&#34;color:#a6e22e&#34;&gt;Description&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;Nomad&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;Documentation&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;https&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;://&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;www&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;nomadproject&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;io&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;docs&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;Wants&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;network-online&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;target&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;After&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;network-online&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;target&lt;/span&gt;
+
+[&lt;span style=&#34;color:#a6e22e&#34;&gt;Service&lt;/span&gt;]
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Nomad server should be run as the nomad user. Nomad clients&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;# should be run as root&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;User&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;nomad&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;Group&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;nomad&lt;/span&gt;
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;ExecReload&lt;/span&gt;=&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;bin&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;kill&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;-HUP&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;$&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;MAINPID&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;ExecStart&lt;/span&gt;=&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;bin&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;nomad&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;agent&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;-config&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;etc&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;nomad&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;d&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;KillMode&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;process&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;KillSignal&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;SIGINT&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;LimitNOFILE&lt;/span&gt;=&lt;span style=&#34;color:#ae81ff&#34;&gt;65536&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;LimitNPROC&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;infinity&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;Restart&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;on-failure&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;RestartSec&lt;/span&gt;=&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;TasksMax&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;infinity&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;OOMScoreAdjust&lt;/span&gt;=&lt;span style=&#34;color:#ae81ff&#34;&gt;-1000&lt;/span&gt;
+
+[&lt;span style=&#34;color:#a6e22e&#34;&gt;Install&lt;/span&gt;]
+&lt;span style=&#34;color:#a6e22e&#34;&gt;WantedBy&lt;/span&gt;=&lt;span style=&#34;color:#a6e22e&#34;&gt;multi-user&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;target&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Enable and start the Nomad systemd service by running:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;sudo systemctl enable nomad
+sudo systemctl start nomad
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;nomad-config&#34; &gt;Nomad Config
+&lt;span&gt;
+    &lt;a href=&#34;#nomad-config&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Add the following content into &lt;code&gt;/etc/nomad.d/nomad.hcl&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-hcl&#34; data-lang=&#34;hcl&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Full configuration options can be found at https://www.nomadproject.io/docs/configuration
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+datacenter &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dc1&amp;#34;&lt;/span&gt;
+
+data_dir &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/opt/nomad&amp;#34;&lt;/span&gt;
+bind_addr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0.0.0.0&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;server&lt;/span&gt; {
+  enabled &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;client&lt;/span&gt; {
+  enabled &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;running-a-job&#34; &gt;Running a Job
+&lt;span&gt;
+    &lt;a href=&#34;#running-a-job&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Note that this job requires docker to be installed in the host.&lt;/p&gt;
+&lt;p&gt;Add the following content in a &lt;code&gt;first-job.nomad&lt;/code&gt; file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-hcl&#34; data-lang=&#34;hcl&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;job&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rabbit&amp;#34;&lt;/span&gt; {
+  datacenters &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dc1&amp;#34;&lt;/span&gt;]
+
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;group&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rabbitmq&amp;#34;&lt;/span&gt; {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;network&lt;/span&gt; {
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;port&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rabbit&amp;#34;&lt;/span&gt; {
+        to &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5672&lt;/span&gt;
+      }
+
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;port&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;management&amp;#34;&lt;/span&gt; {
+        to &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;15672&lt;/span&gt;
+      }
+    }
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;task&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rabbit&amp;#34;&lt;/span&gt; {
+      driver &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;docker&amp;#34;&lt;/span&gt;
+
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;config&lt;/span&gt; {
+        image &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rabbitmq:3-management&amp;#34;&lt;/span&gt;
+        ports &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rabbit&amp;#34;, &amp;#34;management&amp;#34;&lt;/span&gt;]
+        auth_soft_fail &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+      }
+
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;resources&lt;/span&gt; {
+        cpu &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;500&lt;/span&gt;
+        memory &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;512&lt;/span&gt;
+      }
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then do a dry run of the deployment by running &lt;code&gt;nomad job plan first-job.nomad&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If everything went well, Nomad will tell you it can create the deployment
+succesfully and show you the command to start the process. You can then run this
+command, wait until it finishes and check the results the &lt;code&gt;Jobs&lt;/code&gt; section inside
+&lt;a href=&#34;127.0.0.1:4646&#34;&gt;Nomad&amp;rsquo;s web interface&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;clustering-with-consul&#34; &gt;Clustering with Consul
+&lt;span&gt;
+    &lt;a href=&#34;#clustering-with-consul&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;In order to create a cluster with our own nodes, we will leverage the existing
+Nomad + Consul integration for service discovery. Add the following section to
+every Nomad node you want to connect to the cluster:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-hcl&#34; data-lang=&#34;hcl&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Inside the server block, add bootstrap_expect with the number of nodes that
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# you will run in your cluster
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;server&lt;/span&gt; {
+  bootstrap_expect &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;consul&lt;/span&gt; {&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;  # The address to the Consul Agent
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  address &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;consul-ip:5000&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;  # The service name to register the server and client with Consul
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  server_service_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nomad&amp;#34;&lt;/span&gt;
+  client_service_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nomad-client&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;  # Enables automatically registering the services
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  auto_advertise &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;  # Enabling the server and client to bootstrap using consul
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  server_auto_join &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+  client_auto_join &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;wrapping-up&#34; &gt;Wrapping up
+&lt;span&gt;
+    &lt;a href=&#34;#wrapping-up&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Nomad is an awesome scheduler and orchestrator, and it is being pretty
+refreshing using its simple API in order to get started learning about
+orchestrators. I hope this post helps some curious readers and my future self
+when setting Nomad up.&lt;/p&gt;
+&lt;p&gt;In order to continue learning about Nomad, check &lt;a href=&#34;https://developer.hashicorp.com/nomad/docs&#34;&gt;HashiCorp&amp;rsquo;s
+docs&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;resources&#34; &gt;Resources
+&lt;span&gt;
+    &lt;a href=&#34;#resources&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-install&#34;&gt;Install Nomad&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.hashicorp.com/nomad/tutorials/enterprise/production-deployment-guide-vm-with-consul&#34;&gt;Nomad Deployment Guide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.hashicorp.com/nomad/tutorials/get-started/get-started-run&#34;&gt;Start Nomad and Run Your First Job&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.hashicorp.com/nomad/tutorials/manage-clusters/clustering&#34;&gt;Connect Nodes into a Cluster&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

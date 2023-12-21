@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+
+
+<html lang="en-us" data-theme="">
+<head>
+    
+        
+<meta charset="utf-8">
+<meta name="HandheldFriendly" content="True">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer-when-downgrade">
+
+<title>KVM GPU Passthrough - Vinícius Müller&rsquo;s Blog</title>
+
+<meta name="description" content="Intro     Recently I wanted to run a Windows virtual machine from NixOS that has access to my GPU, mostly for gaming. This post will cover from enabling the necessary kernel options and crafting a NixOS configuration to setting a Windows VM up and making it able to use the GPU and other peripherals.
+ Note: This post is heavily based in this Arch Wiki article and is made mostly as a guide to the author itself, although it is supposed to help any people with a similar hardware setup trying to GPU passthrough on NixOS.">
+
+
+
+
+
+<link rel="icon" type="image/x-icon" href="https://viniciusmuller.github.io/blog/favicon.ico">
+<link rel="apple-touch-icon-precomposed" href="https://viniciusmuller.github.io/blog/favicon.png">
+
+
+
+
+    
+
+
+
+
+
+
+    
+
+
+
+
+
+    
+    
+        
+    
+    
+
+    
+        <link rel="stylesheet" href="https://viniciusmuller.github.io/blog/css/style.min.5aca35955b4a4a2b3987b33115c6840f82dd4fb76a33d9d54ec059a3c019dd8c.css" integrity="sha256-Wso1lVtKSis5h7MxFcaED4LdT7dqM9nVTsBZo8AZ3Yw=">
+    
+
+
+
+
+
+    
+
+    
+
+
+
+
+
+    
+    
+        
+    
+    
+
+    
+        <script src="https://viniciusmuller.github.io/blog/js/script.min.510c781c39dbb21b4c76d85c82e2bdf4689220adbb7cd61e49e9d293e442fb42.js" type="text/javascript" charset="utf-8" integrity="sha256-UQx4HDnbshtMdthcguK99GiSIK27fNYeSenSk&#43;RC&#43;0I="></script>
+    
+
+
+
+
+
+
+
+<meta property="og:title" content="KVM GPU Passthrough" />
+<meta property="og:description" content="Intro     Recently I wanted to run a Windows virtual machine from NixOS that has access to my GPU, mostly for gaming. This post will cover from enabling the necessary kernel options and crafting a NixOS configuration to setting a Windows VM up and making it able to use the GPU and other peripherals.
+ Note: This post is heavily based in this Arch Wiki article and is made mostly as a guide to the author itself, although it is supposed to help any people with a similar hardware setup trying to GPU passthrough on NixOS." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://viniciusmuller.github.io/blog/blog/gpu_passthrough/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2021-10-29T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-10-29T00:00:00+00:00" />
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="KVM GPU Passthrough"/>
+<meta name="twitter:description" content="Intro     Recently I wanted to run a Windows virtual machine from NixOS that has access to my GPU, mostly for gaming. This post will cover from enabling the necessary kernel options and crafting a NixOS configuration to setting a Windows VM up and making it able to use the GPU and other peripherals.
+ Note: This post is heavily based in this Arch Wiki article and is made mostly as a guide to the author itself, although it is supposed to help any people with a similar hardware setup trying to GPU passthrough on NixOS."/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+</head>
+<body>
+    <a class="skip-main" href="#main">Skip to main content</a>
+    <div class="container">
+        <header class="common-header"> 
+            
+                <div class="header-top">
+    <h1 class="site-title">
+    <a href="/blog">Vinícius Müller&#39;s Blog</a>
+</h1>
+    <ul class="social-icons">
+
+
+    
+        
+        
+        <li>
+            <a href="https://github.com/viniciusmuller" title="Github" rel="me">
+            <span class="inline-svg" >
+
+
+
+
+    
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+
+</span>
+
+            </a>
+        </li>
+    
+
+    
+        
+        
+        <li>
+            <a href="mailto:vinigm.nho@gmail.com" title="Email" rel="me">
+            <span class="inline-svg" >
+
+
+
+
+    
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M464 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm0 48v40.805c-22.422 18.259-58.168 46.651-134.587 106.49-16.841 13.247-50.201 45.072-73.413 44.701-23.208.375-56.579-31.459-73.413-44.701C106.18 199.465 70.425 171.067 48 152.805V112h416zM48 400V214.398c22.914 18.251 55.409 43.862 104.938 82.646 21.857 17.205 60.134 55.186 103.062 54.955 42.717.231 80.509-37.199 103.053-54.947 49.528-38.783 82.032-64.401 104.947-82.653V400H48z"/></svg>
+
+</span>
+
+            </a>
+        </li>
+    
+
+
+
+    <li>
+            <a href="https://viniciusmuller.github.io/blog/index.xml" title="RSS" rel="me">
+            <span class="inline-svg" >
+
+
+
+
+    
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M128.081 415.959c0 35.369-28.672 64.041-64.041 64.041S0 451.328 0 415.959s28.672-64.041 64.041-64.041 64.04 28.673 64.04 64.041zm175.66 47.25c-8.354-154.6-132.185-278.587-286.95-286.95C7.656 175.765 0 183.105 0 192.253v48.069c0 8.415 6.49 15.472 14.887 16.018 111.832 7.284 201.473 96.702 208.772 208.772.547 8.397 7.604 14.887 16.018 14.887h48.069c9.149.001 16.489-7.655 15.995-16.79zm144.249.288C439.596 229.677 251.465 40.445 16.503 32.01 7.473 31.686 0 38.981 0 48.016v48.068c0 8.625 6.835 15.645 15.453 15.999 191.179 7.839 344.627 161.316 352.465 352.465.353 8.618 7.373 15.453 15.999 15.453h48.068c9.034-.001 16.329-7.474 16.005-16.504z"/></svg>
+
+</span>
+
+            </a>
+        </li>
+    
+
+</ul>
+</div>
+
+    <nav></nav>
+
+
+
+
+
+
+            
+        </header>
+        <main id="main" tabindex="-1"> 
+            
+    
+
+    <article class="post h-entry">
+        <div class="post-header">
+            <header>
+                <h1 class="p-name post-title">KVM GPU Passthrough</h1>
+
+                
+            </header>
+        </div>
+        
+
+
+
+
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#intro">Intro</a></li>
+    <li><a href="#hardware">Hardware</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#setup">Setup</a>
+      <ul>
+        <li><a href="#isolating-the-gpu">Isolating the GPU</a></li>
+        <li><a href="#installing-the-guest-os">Installing the Guest OS</a></li>
+        <li><a href="#pci-passthrough">PCI Passthrough</a></li>
+        <li><a href="#keyboardmouse-support">Keyboard/Mouse support</a></li>
+        <li><a href="#ivshmem-support">IVSHMEM Support</a></li>
+        <li><a href="#kmonad-support">KMonad Support</a></li>
+        <li><a href="#audio-support">Audio Support</a></li>
+        <li><a href="#video-support">Video support</a></li>
+        <li><a href="#usb-support">USB Support</a></li>
+        <li><a href="#partition-support">Partition Support</a></li>
+      </ul>
+    </li>
+    <li><a href="#performance-improvements">Performance Improvements</a>
+      <ul>
+        <li><a href="#changing-number-of-cpu-cores">Changing number of CPU cores</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#resources">Resources</a></li>
+  </ul>
+</nav>
+
+        <div class="content e-content">
+            <h2 id="intro" >Intro
+<span>
+    <a href="#intro">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><p>Recently I wanted to run a Windows virtual machine from NixOS that has access to
+my GPU, mostly for gaming. This post will cover from enabling the necessary
+kernel options and crafting a NixOS configuration to setting a Windows VM up and
+making it able to use the GPU and other peripherals.</p>
+<blockquote>
+<p>Note: This post is heavily based in <a href="https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF">this Arch Wiki article</a> and is made
+mostly as a guide to the author itself, although it is supposed to help any
+people with a similar hardware setup trying to GPU passthrough on NixOS.</p>
+</blockquote>
+<h2 id="hardware" >Hardware
+<span>
+    <a href="#hardware">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><p>This is my relevant hardware information for this post. It&rsquo;s worth noting that I
+only have <strong>one dedicated GPU</strong> and <strong>one integrated GPU</strong>. This post is mainly
+meant for people in that same situation.</p>
+<ul>
+<li>OS: <code>NixOS 21.11 Porcupine</code></li>
+<li>Motherboard: <code>GA-Gaming B8</code></li>
+<li>CPU: <code>Intel i7-7700</code></li>
+<li>Dedicated GPU: <code>NVIDIA GTX 1070</code></li>
+<li>Integrated GPU: <code>Intel HD Graphics 630</code></li>
+</ul>
+<h2 id="requirements" >Requirements
+<span>
+    <a href="#requirements">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><ul>
+<li>You must have the <code>VT-D</code> feature enabled inside your BIOS</li>
+<li><a href="https://en.wikipedia.org/wiki/List_of_IOMMU-supporting_hardware">Your hardware must support IOMMU</a></li>
+<li>You must have a spare GPU device.</li>
+</ul>
+<h2 id="setup" >Setup
+<span>
+    <a href="#setup">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><h3 id="isolating-the-gpu" >Isolating the GPU
+<span>
+    <a href="#isolating-the-gpu">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>In this section we will isolate the graphics card from the host so that we can
+pass it through without any issues.</p>
+<blockquote>
+<p>Note: This section assumes that you are going to passthrough a NVDIA GPU.</p>
+</blockquote>
+<h4 id="setting-integrated-graphics-as-output" >Setting Integrated Graphics as Output
+<span>
+    <a href="#setting-integrated-graphics-as-output">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><blockquote>
+<p>Note: This section is only valid if you only have only one <strong>GPU</strong> and one
+<strong>iGPU</strong>.</p>
+</blockquote>
+<p>In order to make it work, you will have to go to your <strong>BIOS</strong> settings and change
+the default output display to the integrated graphics.</p>
+<blockquote>
+<p>Caution: Be sure that you have a way to set the graphics output of your
+motherboard as the input to your monitor, otherwise you will be locked without
+graphics.</p>
+</blockquote>
+<h4 id="enabling-iommu" >Enabling IOMMU
+<span>
+    <a href="#enabling-iommu">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><p>Inside your NixOS configuration, add:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">boot<span style="color:#f92672">.</span>kernelParams <span style="color:#960050;background-color:#1e0010">=</span> [
+  <span style="color:#75715e"># https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Setting_up_IOMMU</span>
+  <span style="color:#e6db74">&#34;intel_iommu=on&#34;</span>
+  <span style="color:#e6db74">&#34;iommu=pt&#34;</span>
+
+  <span style="color:#75715e"># You might need this to avoid ASPM errors on boot</span>
+  <span style="color:#e6db74">&#34;pcie_aspm=off&#34;</span>
+];
+</code></pre></div><p>Then rebuild and reboot your system.</p>
+<h4 id="identifying-iommu-devices" >Identifying IOMMU Devices
+<span>
+    <a href="#identifying-iommu-devices">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><p>You can use the following snippet to identify your IOMMU devices:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">shopt -s nullglob
+<span style="color:#66d9ef">for</span> d in /sys/kernel/iommu_groups/*/devices/*; <span style="color:#66d9ef">do</span>
+    n<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;&#39;</span><span style="color:#e6db74">${</span>d#*/iommu_groups/*<span style="color:#e6db74">}</span>; n<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;&#39;</span><span style="color:#e6db74">${</span>n%%/*<span style="color:#e6db74">}</span>
+    printf <span style="color:#e6db74">&#34;IOMMU Group %s &#34;</span> <span style="color:#e6db74">&#34;</span>$n<span style="color:#e6db74">&#34;</span>
+    lspci -nns <span style="color:#e6db74">&#34;&#39;&#39;</span><span style="color:#e6db74">${</span>d##*/<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">done</span>;
+</code></pre></div><blockquote>
+<p>Note: This script requires the <code>lspci</code> binary, available on Nix via the
+<code>pciutils</code> package.</p>
+</blockquote>
+<p>This will be useful to get the ID of the graphics card in the next section.
+Output example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">❯ list-iommu-devices  | grep GTX
+IOMMU Group <span style="color:#ae81ff">1</span> 01:00.0 VGA compatible controller <span style="color:#f92672">[</span>0300<span style="color:#f92672">]</span>: NVIDIA Corporation GP104 <span style="color:#f92672">[</span>GeForce GTX 1070<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>10de:1b81<span style="color:#f92672">]</span> <span style="color:#f92672">(</span>rev a1<span style="color:#f92672">)</span>
+</code></pre></div><h4 id="configuring-the-nixos-host" >Configuring the NixOS Host
+<span>
+    <a href="#configuring-the-nixos-host">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><p>Add the following to your NixOS configuration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix"><span style="color:#75715e"># Enable VFIO and KVM kernel modules</span>
+boot<span style="color:#f92672">.</span>kernelModules <span style="color:#960050;background-color:#1e0010">=</span> [
+  <span style="color:#e6db74">&#34;kvm-intel&#34;</span> <span style="color:#75715e"># If using an AMD processor, use `kvm-amd`</span>
+  <span style="color:#e6db74">&#34;vfio_pci&#34;</span>
+  <span style="color:#e6db74">&#34;vfio_iommu_type1&#34;</span>
+  <span style="color:#e6db74">&#34;vfio_virqfd&#34;</span>
+  <span style="color:#e6db74">&#34;vfio&#34;</span>
+];
+
+<span style="color:#75715e"># We blacklist NVIDIA drivers from the kernel modules, ensuring the GPU</span>
+<span style="color:#75715e"># doesn&#39;t get loaded.</span>
+boot<span style="color:#f92672">.</span>blacklistedKernelModules <span style="color:#960050;background-color:#1e0010">=</span> [
+  <span style="color:#e6db74">&#34;nvidia&#34;</span>
+  <span style="color:#e6db74">&#34;nouveau&#34;</span>
+];
+
+<span style="color:#75715e"># Change the id below after `ids=` to the same of your GPU id</span>
+boot<span style="color:#f92672">.</span>extraModprobeConfig <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#e6db74">&#34;options vfio-pci ids=10de:1b81&#34;</span>;
+
+<span style="color:#75715e"># This might be necessary for you</span>
+boot<span style="color:#f92672">.</span>postBootCommands <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#e6db74">&#39;&#39;
+</span><span style="color:#e6db74">  DEVS=&#34;0000:0f:00.0 0000:0f:00.1&#34;
+</span><span style="color:#e6db74">  for DEV in $DEVS; do
+</span><span style="color:#e6db74">    echo &#34;vfio-pci&#34; &gt; /sys/bus/pci/devices/$DEV/driver_override
+</span><span style="color:#e6db74">  done
+</span><span style="color:#e6db74">  modprobe -i vfio-pci
+</span><span style="color:#e6db74">&#39;&#39;</span>;
+</code></pre></div><p>Now rebuild your configuration and reboot. You can test that the configuration
+worked by running the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯ dmesg | grep -i vfio
+<span style="color:#f92672">[</span>    2.382403<span style="color:#f92672">]</span> VFIO - User Level meta-driver version: 0.3
+<span style="color:#f92672">[</span>    2.391945<span style="color:#f92672">]</span> vfio-pci 0000:01:00.0: vgaarb: changed VGA decodes: olddecodes<span style="color:#f92672">=</span>io+mem,decodes<span style="color:#f92672">=</span>io+mem:owns<span style="color:#f92672">=</span>none
+<span style="color:#f92672">[</span>    2.403383<span style="color:#f92672">]</span> vfio_pci: add <span style="color:#f92672">[</span>10de:1b81<span style="color:#f92672">[</span>ffffffff:ffffffff<span style="color:#f92672">]]</span> class 0x000000/00000000
+<span style="color:#f92672">[</span>    2.798115<span style="color:#f92672">]</span> vfio-pci 0000:01:00.0: vgaarb: changed VGA decodes: olddecodes<span style="color:#f92672">=</span>io+mem,decodes<span style="color:#f92672">=</span>io+mem:owns<span style="color:#f92672">=</span>none
+<span style="color:#f92672">[</span>  552.633505<span style="color:#f92672">]</span> vfio-pci 0000:01:00.0: enabling device <span style="color:#f92672">(</span><span style="color:#ae81ff">0000</span> -&gt; 0003<span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>  552.633809<span style="color:#f92672">]</span> vfio-pci 0000:01:00.0: vfio_ecap_init: hiding ecap 0x19@0x900
+<span style="color:#f92672">[</span> 1034.204707<span style="color:#f92672">]</span> vfio-pci 0000:01:00.0: vfio_ecap_init: hiding ecap 0x19@0x900
+</code></pre></div><p>The output should be similar to this (note the <code>add [10de:1b81...</code> line).</p>
+<h3 id="installing-the-guest-os" >Installing the Guest OS
+<span>
+    <a href="#installing-the-guest-os">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><h4 id="nixos-virtualization-setup" >NixOS Virtualization Setup
+<span>
+    <a href="#nixos-virtualization-setup">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">virtualisation<span style="color:#f92672">.</span>libvirtd <span style="color:#960050;background-color:#1e0010">=</span> {
+  enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  onBoot <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ignore&#34;</span>;
+  onShutdown <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;shutdown&#34;</span>;
+  qemu <span style="color:#f92672">=</span> {
+    ovmf<span style="color:#f92672">.</span>enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    runAsRoot <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+  };
+};
+
+environment<span style="color:#f92672">.</span>systemPackages <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#66d9ef">with</span> pkgs; [
+  virt-manager
+];
+</code></pre></div><h4 id="installation" >Installation
+<span>
+    <a href="#installation">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><blockquote>
+<p>This part assumes you are going to install Windows inside the box.</p>
+</blockquote>
+<ul>
+<li>Download the Windows ISO of your liking (This post was tested using Windows 10).</li>
+<li>Move the ISO to <code>/var/lib/libvirt/images</code> so that we don&rsquo;t get permission
+errors when launching the VM.</li>
+<li>Open the <code>virt-manager</code> program.</li>
+<li>Create the VM normally until the Wizard asks you to set the guest name, then
+check <strong>Customize before install</strong> and proceed.</li>
+<li>Inside the <strong>Overview</strong> section, change firmware to <strong>UEFI</strong>.</li>
+<li>Inside the <strong>CPUs</strong> section, change the CPU model to <strong>host-passthrough</strong> (if it&rsquo;s
+not being shown uncheck <strong>Copy host CPU configuration</strong>).</li>
+<li>Don&rsquo;t add the PCI device yet, just start the Windows ISO and install it
+through the <code>virt-viewer</code> screen.</li>
+<li>After a successful installation, shut down the box and proceed.</li>
+</ul>
+<blockquote>
+<p>Note: If you fall inside an &ldquo;UEFI Shell&rdquo; when starting the VM for
+installation, just type exit, navigate to <strong>Boot Manager</strong> and boot into the
+desired device.</p>
+</blockquote>
+<h3 id="pci-passthrough" >PCI Passthrough
+<span>
+    <a href="#pci-passthrough">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><ul>
+<li>
+<p>Remove these virtual device sections in box&rsquo;s the XML config:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;channel</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;spicevmc&#34;</span><span style="color:#f92672">&gt;</span>
+  ...
+<span style="color:#f92672">&lt;/channel&gt;</span>
+<span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;tablet&#34;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#34;usb&#34;</span><span style="color:#f92672">&gt;</span>
+  ...
+<span style="color:#f92672">&lt;/input&gt;</span>
+<span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;mouse&#34;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#34;ps2&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;keyboard&#34;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#34;ps2&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;graphics</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;spice&#34;</span> <span style="color:#a6e22e">autoport=</span><span style="color:#e6db74">&#34;yes&#34;</span><span style="color:#f92672">&gt;</span>
+  ...
+<span style="color:#f92672">&lt;/graphics&gt;</span>
+<span style="color:#f92672">&lt;video&gt;</span>
+  <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;qxl&#34;</span> <span style="color:#960050;background-color:#1e0010">...</span><span style="color:#f92672">/&gt;</span>
+  ...
+<span style="color:#f92672">&lt;/video&gt;</span>
+</code></pre></div></li>
+<li>
+<p>Add this to avoid virtualization detection:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;features&gt;</span>
+  <span style="color:#f92672">&lt;hyperv&gt;</span>
+    <span style="color:#f92672">&lt;vendor_id</span> <span style="color:#a6e22e">state=</span><span style="color:#e6db74">&#39;on&#39;</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#39;randomid&#39;</span><span style="color:#f92672">/&gt;</span>
+  <span style="color:#f92672">&lt;/hyperv&gt;</span>
+<span style="color:#f92672">&lt;/features&gt;</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;features&gt;</span>
+  <span style="color:#f92672">&lt;kvm&gt;</span>
+    <span style="color:#f92672">&lt;hidden</span> <span style="color:#a6e22e">state=</span><span style="color:#e6db74">&#39;on&#39;</span><span style="color:#f92672">/&gt;</span>
+  <span style="color:#f92672">&lt;/kvm&gt;</span>
+<span style="color:#f92672">&lt;/features&gt;</span>
+</code></pre></div><p>Depending on your card, the GPU might detect it&rsquo;s being virtualized and refuse
+to run, triggering an <code>error 43</code> (device unidentifiable) and leading to a
+boring black screen. These snippets help to avoid this problem.</p>
+</li>
+<li>
+<p>In the box&rsquo;s details, click <strong>Add Hardware</strong>.</p>
+</li>
+<li>
+<p>Add all the devices that are in the same <a href="#enabling-iommu"><strong>IOMMU</strong></a> group of your GPU.</p>
+</li>
+<li>
+<p>You should now be able to start your box and change your monitor input to the
+GPU output to check if it&rsquo;s working. You should see your Windows box normally
+on your screen.</p>
+</li>
+</ul>
+<h3 id="keyboardmouse-support" >Keyboard/Mouse support
+<span>
+    <a href="#keyboardmouse-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>Add to your box configuration, inside the <code>&lt;devices&gt;</code> section:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;evdev&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#34;/dev/input/by-id/your-mouse-here&#34;</span> <span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/input&gt;</span>
+<span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;evdev&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#34;/dev/input/by-id/your-keyboard-here&#34;</span> <span style="color:#a6e22e">grab=</span><span style="color:#e6db74">&#34;all&#34;</span> <span style="color:#a6e22e">repeat=</span><span style="color:#e6db74">&#34;on&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/input&gt;</span>
+<span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;mouse&#34;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#34;virtio&#34;</span> <span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;keyboard&#34;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#34;virtio&#34;</span> <span style="color:#f92672">/&gt;</span>
+</code></pre></div><h4 id="tips" >Tips
+<span>
+    <a href="#tips">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><ul>
+<li>The devices must have &ldquo;event&rdquo; in their name.</li>
+<li>To check whether a device is the correct, <code>cat</code> it and use the device, you
+should see some gibberish being printed into the shell that <code>cat</code> is
+running.</li>
+</ul>
+<p>After setting this up, you should now be able to boot your VM and use your
+keyboard and mouse inside it. In order to swap the keyboard and mouse between
+host and the guest, press both <strong>left control</strong> and <strong>right control</strong> at the
+same time.</p>
+<h3 id="ivshmem-support" >IVSHMEM Support
+<span>
+    <a href="#ivshmem-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><blockquote>
+<p>Note: This section is only useful if you are going to use either <a href="#scream--ivshmem">Scream with IVSHMEM</a> or <a href="#looking-glass">Looking Glass</a>.</p>
+</blockquote>
+<ul>
+<li>Inside your Windows box&rsquo;s <strong>Device Manager</strong>, go to <strong>System Devices</strong> and select <strong>PCI standard RAM Controller</strong>, then update it with <a href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/">RedHat&rsquo;s IVSHMEM drivers</a> (preferentially v0.1-161+).</li>
+</ul>
+<h3 id="kmonad-support" >KMonad Support
+<span>
+    <a href="#kmonad-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>If you are using [[Elegant remappings with KMonad | KMonad]], you will notice
+that it grabs your keyboard&rsquo;s <code>udev</code> device and it won&rsquo;t output anything while
+KMonad is actively using this keyboard. We can work around this by symlinking
+the output device that KMonad creates into a known name that we can pass to our
+VM.</p>
+<p>Inside my KMonad configuration, I have this relevant line:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#a6e22e">output</span> (<span style="color:#a6e22e">uinput</span><span style="color:#f92672">-</span><span style="color:#a6e22e">sink</span> <span style="color:#e6db74">&#34;KMonad output&#34;</span>)
+</code></pre></div><p>This sets the name of the <code>udev</code> device that KMonad creates. Having this
+information, we can write an <code>udev</code> rule that detects and symlinks this device
+to a known path:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">services<span style="color:#f92672">.</span>udev<span style="color:#f92672">.</span>extraRules <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#e6db74">&#39;&#39;
+</span><span style="color:#e6db74">  # Symlink KMonad device
+</span><span style="color:#e6db74">  ACTION==&#34;add&#34;, ATTRS{name}==&#34;KMonad output&#34;, SYMLINK+=&#34;KMONAD_DEVICE&#34;
+</span><span style="color:#e6db74">&#39;&#39;</span>;
+</code></pre></div><p>Now that we have the symbolic link <code>/dev/KMONAD_DEVICE</code>, which points to the dynamic
+input that KMonad created we can provide it inside the VM&rsquo;s XML file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;evdev&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#34;/dev/KMONAD_DEVICE&#34;</span> <span style="color:#a6e22e">grab=</span><span style="color:#e6db74">&#34;all&#34;</span> <span style="color:#a6e22e">repeat=</span><span style="color:#e6db74">&#34;on&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/input&gt;</span>
+</code></pre></div><h3 id="audio-support" >Audio Support
+<span>
+    <a href="#audio-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>At this point you should already have a working Windows box which can see and
+use your GPU, but it probably doesn&rsquo;t have any sound output.</p>
+<h4 id="scream--bridged-network" >Scream + Bridged Network
+<span>
+    <a href="#scream--bridged-network">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><h5 id="host-setup" >Host Setup
+<span>
+    <a href="#host-setup">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h5><ul>
+<li>Set the network device to <strong>Bridge Device</strong> and <strong>Device name</strong> to your
+virtual bridge, usually <strong>virbr0</strong>.</li>
+<li>Inside your NixOS configuration, add:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">systemd<span style="color:#f92672">.</span>user<span style="color:#f92672">.</span>services<span style="color:#f92672">.</span>scream-network <span style="color:#960050;background-color:#1e0010">=</span> {
+  enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Scream network&#34;</span>;
+  serviceConfig <span style="color:#f92672">=</span> {
+    ExecStart <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>pkgs<span style="color:#f92672">.</span>scream<span style="color:#e6db74">}</span><span style="color:#e6db74">/bin/scream -o pulse -i virbr0&#34;</span>;
+    Restart <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;always&#34;</span>;
+  };
+  wantedBy <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;default.target&#34;</span> ];
+  requires <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;pipewire.service&#34;</span> ]; <span style="color:#75715e"># Change to pulseaudio.service if using it</span>
+};
+</code></pre></div><p>Then rebuild your system.</p>
+</li>
+</ul>
+<h5 id="guest-setup" >Guest Setup
+<span>
+    <a href="#guest-setup">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h5><ul>
+<li>Download and install <a href="https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/#virtio-win-direct-downloads">VirtIO drivers</a> (<a href="https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md">virtio-win-iso</a>).</li>
+<li>Download and Install <a href="https://github.com/duncanthrax/scream/releases/">Scream</a>.
+<blockquote>
+<p>Note: If you previously had setup <a href="#scream--ivshmem">Scream with IVSHMEM</a>,
+remember to remove the registry entry that makes Scream use IVSHMEM.</p>
+</blockquote>
+</li>
+</ul>
+<p>You should now be able to hear the guest&rsquo;s audio on your host.</p>
+<blockquote>
+<p>Note: For some reason, even though the <code>scream-network</code> unit is running, the
+box doesn&rsquo;t output any sound until I restart the unit.
+If that also happens to you, you can do so with: <code>systemctl --user restart scream-network.service</code>.</p>
+</blockquote>
+<!-- raw HTML omitted -->
+<h4 id="scream--ivshmem" >Scream + IVSHMEM
+<span>
+    <a href="#scream--ivshmem">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><blockquote>
+<p>Note: Setting up Scream with <strong>IVSHMEM</strong> is not the preferred way of doing it,
+and probably will have more disadvantages than advantages.</p>
+</blockquote>
+<h5 id="host-setup-1" >Host Setup
+<span>
+    <a href="#host-setup-1">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h5><ul>
+<li>Add the following to your NixOS configuration and rebuild it:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix"> <span style="color:#75715e"># Pipewire + pulseaudio support (you can also use just pulseaudio)</span>
+ services<span style="color:#f92672">.</span>pipewire <span style="color:#960050;background-color:#1e0010">=</span> {
+   enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+   pulse<span style="color:#f92672">.</span>enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+ };
+
+<span style="color:#75715e"># Scream</span>
+systemd<span style="color:#f92672">.</span>tmpfiles<span style="color:#f92672">.</span>rules <span style="color:#960050;background-color:#1e0010">=</span> [
+  <span style="color:#e6db74">&#34;f /dev/shm/scream 0660 YOUR-USERNAME-HERE qemu-libvirtd -&#34;</span>
+];
+
+systemd<span style="color:#f92672">.</span>user<span style="color:#f92672">.</span>services<span style="color:#f92672">.</span>scream-ivshmem <span style="color:#960050;background-color:#1e0010">=</span> {
+  enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Scream IVSHMEM&#34;</span>;
+  serviceConfig <span style="color:#f92672">=</span> {
+    ExecStart <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>pkgs<span style="color:#f92672">.</span>scream<span style="color:#e6db74">}</span><span style="color:#e6db74">/bin/scream -o pulse -m /dev/shm/scream&#34;</span>;
+    Restart <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;always&#34;</span>;
+  };
+  wantedBy <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;default.target&#34;</span> ];
+  requires <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;pipewire.service&#34;</span> ]; <span style="color:#75715e"># Change to pulseaudio.service if using it</span>
+};
+</code></pre></div></li>
+<li>Add Scream&rsquo;s IVSHMEM configuration inside the <code>&lt;devices&gt;</code> section in the XML
+config:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;shmem</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;scream&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;ivshmem-plain&#34;</span><span style="color:#f92672">/&gt;</span>
+  <span style="color:#f92672">&lt;size</span> <span style="color:#a6e22e">unit=</span><span style="color:#e6db74">&#34;M&#34;</span><span style="color:#f92672">&gt;</span>2<span style="color:#f92672">&lt;/size&gt;</span>
+  <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;pci&#34;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#34;0x0000&#34;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#34;0x00&#34;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#34;0x11&#34;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#34;0x0&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/shmem&gt;</span>
+</code></pre></div></li>
+</ul>
+<h4 id="guest-setup-1" >Guest Setup
+<span>
+    <a href="#guest-setup-1">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><ul>
+<li><a href="#ivshmem-support">Add IVSHMEM support</a></li>
+<li>Download and Install <a href="https://github.com/duncanthrax/scream/releases">Scream Drivers</a>.</li>
+<li>To make the driver use <strong>IVSHMEM</strong>, run from an elevated shell: <code>REG ADD HKLM\SYSTEM\CurrentControlSet\Services\Scream\Options /v UseIVSHMEM /t REG_DWORD /d 2</code>.</li>
+</ul>
+<blockquote>
+<p>Note: If your box&rsquo;s sound doesn&rsquo;t work and the <code>scream-ivshmem</code> unit is running,
+check the note in end of the <a href="#scream--bridged-network">Scream + Bridged Network</a>.</p>
+</blockquote>
+<p>You should now be able to hear the guest&rsquo;s audio on your host.</p>
+<h3 id="video-support" >Video support
+<span>
+    <a href="#video-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><h4 id="looking-glass" >Looking Glass
+<span>
+    <a href="#looking-glass">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h4><p>Looking Glass enables us to view our box graphical output from our XServer
+session.</p>
+<h5 id="host-setup-2" >Host Setup
+<span>
+    <a href="#host-setup-2">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h5><ul>
+<li>
+<p>Add this to your NixOS configuration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">systemd<span style="color:#f92672">.</span>tmpfiles<span style="color:#f92672">.</span>rules <span style="color:#960050;background-color:#1e0010">=</span> [
+  <span style="color:#e6db74">&#34;f /dev/shm/looking-glass 0660 YOUR-USERNAME-HERE qemu-libvirtd -&#34;</span>
+];
+
+environment<span style="color:#f92672">.</span>systemPackages <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#66d9ef">with</span> pkgs; [
+  looking-glass-client
+];
+</code></pre></div><p>Then rebuild your NixOS configuration and reboot the system.</p>
+</li>
+<li>
+<p>Add Looking Glass' required configuration inside the <code>&lt;devices&gt;</code> section in the box&rsquo;s XML:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;!--
+</span><span style="color:#75715e">You only need to add `&lt;graphics&gt;` and `&lt;video&gt;` if you are going to use the
+</span><span style="color:#75715e">spice server.
+</span><span style="color:#75715e">
+</span><span style="color:#75715e">If you prefer swapping your keyboard and mouse between your host and the VM, 
+</span><span style="color:#75715e">just don&#39;t add these two properties and launch `looking-glass-client` with the 
+</span><span style="color:#75715e">`-s no` flag.
+</span><span style="color:#75715e">--&gt;</span>
+<span style="color:#f92672">&lt;graphics</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;spice&#34;</span> <span style="color:#a6e22e">autoport=</span><span style="color:#e6db74">&#34;yes&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;listen</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;address&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/graphics&gt;</span>
+<span style="color:#f92672">&lt;video&gt;</span>
+  <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#34;none&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/video&gt;</span>
+
+<span style="color:#75715e">&lt;!-- Required --&gt;</span>
+<span style="color:#f92672">&lt;shmem</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;looking-glass&#39;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;ivshmem-plain&#39;</span><span style="color:#f92672">/&gt;</span>
+  <span style="color:#f92672">&lt;size</span> <span style="color:#a6e22e">unit=</span><span style="color:#e6db74">&#39;M&#39;</span><span style="color:#f92672">&gt;</span>32<span style="color:#f92672">&lt;/size&gt;</span>
+<span style="color:#f92672">&lt;/shmem&gt;</span>
+</code></pre></div><p>See <a href="https://looking-glass.io/docs/stable/install/#determining-memory">Looking Glass' documentation</a> in order to calculate how much memory you should give to Looking Glass (although 32M should handle most of the cases).</p>
+</li>
+</ul>
+<h5 id="guest-setup-2" >Guest Setup
+<span>
+    <a href="#guest-setup-2">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h5><p>Inside your Windows box, you will need to:</p>
+<ul>
+<li><a href="#ivshmem-support">Add IVSHMEM support</a>.</li>
+<li><a href="https://looking-glass.io/downloads">Download and install <code>Looking Glass (host)</code></a>.</li>
+</ul>
+<p>You should now be able to run something like <code>looking-glass-client -s no -F -f /dev/shm/looking-glass</code> on your host and see your guest graphical output.</p>
+<blockquote>
+<p>Note: The version of both your Looking Glass client and host applications must match.</p>
+</blockquote>
+<h3 id="usb-support" >USB Support
+<span>
+    <a href="#usb-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>If you need to use your USBs to wire up say a pendrive or an external HD, you
+can easily plug them into your PC and pass them to your guest through the <strong>Add
+Hardware</strong> button inside the box&rsquo;s details.</p>
+<h3 id="partition-support" >Partition Support
+<span>
+    <a href="#partition-support">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>To passthorugh native partitions, create them on your host, then inside the <strong>Add
+Hardware</strong> menu, select <strong>Storage</strong>, uncheck <strong>Create a disk image for the
+virtual machine</strong>, check <strong>Select or create custom storage</strong> and add the path do
+your partition inside the input (e.g: <code>/dev/sdb2</code>).</p>
+<h2 id="performance-improvements" >Performance Improvements
+<span>
+    <a href="#performance-improvements">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><h3 id="changing-number-of-cpu-cores" >Changing number of CPU cores
+<span>
+    <a href="#changing-number-of-cpu-cores">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h3><p>I&rsquo;ve initially had some trouble with poor CPU performance, In order to improve
+it I went into the <strong>CPUs</strong> section inside the box&rsquo;s details and checked
+<strong>Manually set CPU topology</strong>, from here you can increase the number of real
+cores working with the VM.</p>
+<!-- raw HTML omitted -->
+<h2 id="conclusion" >Conclusion
+<span>
+    <a href="#conclusion">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><p>While tinkering with and learning more about <code>VFIO</code> and <code>QEMU</code>/<code>libvirt</code>, I&rsquo;ve
+managed to find an interesting virtual machine workflow:</p>
+<ul>
+<li>Audio: Scream + Bridged Network.</li>
+<li>Video: I&rsquo;m using both the native GPU&rsquo;s output and Looking Glass, depending on what
+I&rsquo;m doing.</li>
+<li>Inputs: I&rsquo;m using both my keyboard and mouse as <code>evdev</code> inputs, so I can swap
+between the bare metal and the virtual machine. I&rsquo;m also using KMonad&rsquo;s output
+device as my keyboard device.</li>
+<li>Storage: I&rsquo;ve installed Windows in a small QEMU virtual disk inside my SSD for
+faster initialization and added another QEMU virtual storage (which is inside
+my HD) for storing data.</li>
+</ul>
+<p>The experience has been much greater than dual boot, since I can just open
+Looking Glass and use Windows as if it were just another workspace in my window
+manager. Now I can use both the OSses at the same time and don&rsquo;t need to waste time
+waiting for system reboots.</p>
+<p>I hope this post to be useful for whoever want to try a <strong>virtual machine + GPU
+passthrough</strong> workflow, be it another reader or myself trying to setup it again
+after formatting the computer.</p>
+<p>This is how my final NixOS configuration looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">{ pkgs<span style="color:#f92672">,</span> <span style="color:#f92672">...</span> }:
+
+<span style="color:#66d9ef">let</span>
+  username <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;vini&#34;</span>;
+<span style="color:#66d9ef">in</span>
+{
+  boot <span style="color:#f92672">=</span> {
+    kernelParams <span style="color:#f92672">=</span> [
+      <span style="color:#75715e"># https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Setting_up_IOMMU</span>
+      <span style="color:#e6db74">&#34;intel_iommu=on&#34;</span>
+      <span style="color:#e6db74">&#34;iommu=pt&#34;</span>
+
+      <span style="color:#e6db74">&#34;pcie_aspm=off&#34;</span>
+    ];
+
+    kernelModules <span style="color:#f92672">=</span> [
+      <span style="color:#e6db74">&#34;kvm-intel&#34;</span>
+      <span style="color:#e6db74">&#34;vfio_pci&#34;</span>
+      <span style="color:#e6db74">&#34;vfio_iommu_type1&#34;</span>
+      <span style="color:#e6db74">&#34;vfio_virqfd&#34;</span>
+      <span style="color:#e6db74">&#34;vfio&#34;</span>
+    ];
+
+    blacklistedKernelModules <span style="color:#f92672">=</span> [
+      <span style="color:#e6db74">&#34;nvidia&#34;</span>
+      <span style="color:#e6db74">&#34;nouveau&#34;</span>
+    ];
+
+    extraModprobeConfig <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;options vfio-pci ids=10de:1b81&#34;</span>;
+
+    postBootCommands <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;&#39;
+</span><span style="color:#e6db74">      DEVS=&#34;0000:0f:00.0 0000:0f:00.1&#34;
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">      for DEV in $DEVS; do
+</span><span style="color:#e6db74">        echo &#34;vfio-pci&#34; &gt; /sys/bus/pci/devices/$DEV/driver_override
+</span><span style="color:#e6db74">      done
+</span><span style="color:#e6db74">      modprobe -i vfio-pci
+</span><span style="color:#e6db74">    &#39;&#39;</span>;
+  };
+
+  services<span style="color:#f92672">.</span>udev<span style="color:#f92672">.</span>extraRules <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;&#39;
+</span><span style="color:#e6db74">    # Symlink KMonad device
+</span><span style="color:#e6db74">    ACTION==&#34;add&#34;, ATTRS{name}==&#34;KMonad output&#34;, SYMLINK+=&#34;KMONAD_DEVICE&#34;
+</span><span style="color:#e6db74">  &#39;&#39;</span>;
+
+  services<span style="color:#f92672">.</span>pipewire <span style="color:#f92672">=</span> {
+    enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    pulse<span style="color:#f92672">.</span>enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+  };
+
+  systemd<span style="color:#f92672">.</span>tmpfiles<span style="color:#f92672">.</span>rules <span style="color:#f92672">=</span> [
+    <span style="color:#e6db74">&#34;f /dev/shm/looking-glass 0660 </span><span style="color:#e6db74">${</span>username<span style="color:#e6db74">}</span><span style="color:#e6db74"> qemu-libvirtd -&#34;</span>
+  ];
+
+  systemd<span style="color:#f92672">.</span>user<span style="color:#f92672">.</span>services<span style="color:#f92672">.</span>scream-network <span style="color:#f92672">=</span> {
+    enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Scream network&#34;</span>;
+    serviceConfig <span style="color:#f92672">=</span> {
+      ExecStart <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>pkgs<span style="color:#f92672">.</span>scream<span style="color:#e6db74">}</span><span style="color:#e6db74">/bin/scream -o pulse -i virbr0&#34;</span>;
+      Restart <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;always&#34;</span>;
+    };
+    wantedBy <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;default.target&#34;</span> ];
+    requires <span style="color:#f92672">=</span> [ <span style="color:#e6db74">&#34;pipewire.service&#34;</span> ];
+  };
+
+  virtualisation<span style="color:#f92672">.</span>libvirtd <span style="color:#f92672">=</span> {
+    enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+    onBoot <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ignore&#34;</span>;
+    onShutdown <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;shutdown&#34;</span>;
+    qemu <span style="color:#f92672">=</span> {
+      ovmf<span style="color:#f92672">.</span>enable <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+      runAsRoot <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    };
+  };
+
+  environment<span style="color:#f92672">.</span>systemPackages <span style="color:#f92672">=</span> <span style="color:#66d9ef">with</span> pkgs; [
+    virt-manager
+    looking-glass-client
+  ];
+}
+</code></pre></div><h2 id="resources" >Resources
+<span>
+    <a href="#resources">
+        <svg viewBox="0 0 28 23" height="100%" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/></svg>
+    </a>
+</span>
+</h2><ul>
+<li><a href="https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF">Arch Wiki&rsquo;s PCI Passthrough Article</a></li>
+<li><a href="https://alexbakker.me/post/nixos-pci-passthrough-qemu-vfio.html">Notes on PCI Passthrough on NixOS using QEMU and VFIO</a></li>
+<li><a href="https://github.com/duncanthrax/scream">Scream Project</a></li>
+<li><a href="https://forum.level1techs.com/t/nixos-vfio-pcie-passthrough/130916">NixOS VFIO PCIe Passthrough</a></li>
+<li><a href="https://looking-glass.io/docs/stable/install/">Looking Glass Setup</a></li>
+<li><a href="https://looking-glass.io/wiki/Using_Scream_over_LAN">Using Scream over LAN</a></li>
+<li><a href="https://forum.level1techs.com/t/sound-while-in-looking-glass-how-to-get-it-to-work-properly-in-november-2020/163448/7">Sound while in Looking Glass: How to get it working</a></li>
+</ul>
+
+        </div>
+        
+
+    
+
+
+
+<div class="post-info">
+    
+        <div class="post-date dt-published">
+            <a class="u-url" href="/blog/blog/gpu_passthrough/"><time datetime="2021-10-29">2021-10-29</time></a>
+            
+        </div>
+    
+
+    <a class="post-hidden-url u-url" href="https://viniciusmuller.github.io/blog/blog/gpu_passthrough/">https://viniciusmuller.github.io/blog/blog/gpu_passthrough/</a>
+    <a href="https://viniciusmuller.github.io/blog" class="p-name p-author post-hidden-author h-card" rel="me">Vinícius Müller</a>
+
+
+    <div class="post-taxonomies">
+        
+            <ul class="post-categories">
+                
+                    
+                    <li><a href="https://viniciusmuller.github.io/blog/categories/nixos/">NixOS</a></li>
+                
+            </ul>
+        
+        
+        
+    </div>
+</div>
+
+    </article>
+
+    
+        
+        
+    
+
+    
+        
+    
+    
+    <div class="pagination post-pagination">
+        <div class="left pagination-item ">
+            
+                <a href="/blog/blog/setting_background_image/">Setting XServer&rsquo;s Background Image</a>
+            
+        </div>
+        <div class="right pagination-item ">
+            
+                <a href="/blog/blog/hybrid_graphics_nvidia_prime/">Hybrid Graphics with NVIDIA PRIME</a>
+            
+        </div>
+    </div>
+
+
+
+
+    
+
+    
+        
+
+
+
+
+
+
+
+
+    
+
+        </main>
+        
+            <footer class="common-footer">
+    
+    
+
+    <div class="common-footer-bottom">
+        
+        <div class="copyright">
+            <p>© Vinícius Müller, 2023<br>
+            Powered by <a target="_blank" rel="noopener noreferrer" href="https://gohugo.io/">Hugo</a>, theme <a target="_blank" rel="noopener noreferrer" href="https://github.com/mitrichius/hugo-theme-anubis">Anubis</a>.<br>
+            
+            </p>  
+        </div> 
+
+        
+
+    
+
+
+
+   
+    </div>
+
+    <p class="h-card vcard">
+
+    <a href=https://viniciusmuller.github.io/blog class="p-name u-url url fn" rel="me">Vinícius Müller</a> 
+
+    
+
+    
+</p> 
+</footer>
+
+        
+    </div>
+</body>
+</html>

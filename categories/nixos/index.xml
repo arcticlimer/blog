@@ -1,0 +1,1110 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>NixOS on Vinícius Müller&#39;s Blog</title>
+    <link>https://viniciusmuller.github.io/blog/categories/nixos/</link>
+    <description>Vinícius Müller&#39;s Blog (NixOS)</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 18 Sep 2022 00:00:00 +0000</lastBuildDate>
+    
+    <atom:link href="https://viniciusmuller.github.io/blog/categories/nixos/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Recovering from broken bootloader</title>
+      <link>https://viniciusmuller.github.io/blog/blog/recovering_from_broken_boot/</link>
+      <pubDate>Sun, 18 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://viniciusmuller.github.io/blog/blog/recovering_from_broken_boot/</guid>
+      <description>&lt;p&gt;NixOS provides some really nice properties, such as the ability to rollback your
+config using a menu in the bootloader if you need. But what if there is no
+bootloader? Recently the power went off when &lt;code&gt;nixos-rebuild switch&lt;/code&gt; was
+rebuilding the bootloader and I got locked out of my PC.&lt;/p&gt;
+&lt;p&gt;In order to repair that, there is no big secret: you will need just a live NixOS
+USB. Then just mount your partitions and run from the ISO: &lt;code&gt;nixos-install --flake &amp;lt;path_to_your_config&amp;gt;&lt;/code&gt;, then Nix will already notice that all the
+required packages are already in your nix store and will just fix your
+bootloader.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Setting XServer&#39;s Background Image</title>
+      <link>https://viniciusmuller.github.io/blog/blog/setting_background_image/</link>
+      <pubDate>Sat, 30 Oct 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://viniciusmuller.github.io/blog/blog/setting_background_image/</guid>
+      <description>&lt;p&gt;If you have NixOS managing your XServer&amp;rsquo;s session you can easily set your
+desktop background image by moving an image to &lt;code&gt;~/.background-image&lt;/code&gt;. If you
+want to customize it furthermore, you can check the options available in the
+&lt;code&gt;services.xserver.desktopManager.wallpaper&lt;/code&gt; namespace.&lt;/p&gt;
+&lt;h1 id=&#34;resources&#34; &gt;Resources
+&lt;span&gt;
+    &lt;a href=&#34;#resources&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;man configuration.nix&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>KVM GPU Passthrough</title>
+      <link>https://viniciusmuller.github.io/blog/blog/gpu_passthrough/</link>
+      <pubDate>Fri, 29 Oct 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://viniciusmuller.github.io/blog/blog/gpu_passthrough/</guid>
+      <description>&lt;h2 id=&#34;intro&#34; &gt;Intro
+&lt;span&gt;
+    &lt;a href=&#34;#intro&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Recently I wanted to run a Windows virtual machine from NixOS that has access to
+my GPU, mostly for gaming. This post will cover from enabling the necessary
+kernel options and crafting a NixOS configuration to setting a Windows VM up and
+making it able to use the GPU and other peripherals.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: This post is heavily based in &lt;a href=&#34;https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF&#34;&gt;this Arch Wiki article&lt;/a&gt; and is made
+mostly as a guide to the author itself, although it is supposed to help any
+people with a similar hardware setup trying to GPU passthrough on NixOS.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;hardware&#34; &gt;Hardware
+&lt;span&gt;
+    &lt;a href=&#34;#hardware&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;This is my relevant hardware information for this post. It&amp;rsquo;s worth noting that I
+only have &lt;strong&gt;one dedicated GPU&lt;/strong&gt; and &lt;strong&gt;one integrated GPU&lt;/strong&gt;. This post is mainly
+meant for people in that same situation.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OS: &lt;code&gt;NixOS 21.11 Porcupine&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Motherboard: &lt;code&gt;GA-Gaming B8&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;CPU: &lt;code&gt;Intel i7-7700&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Dedicated GPU: &lt;code&gt;NVIDIA GTX 1070&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Integrated GPU: &lt;code&gt;Intel HD Graphics 630&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;requirements&#34; &gt;Requirements
+&lt;span&gt;
+    &lt;a href=&#34;#requirements&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;You must have the &lt;code&gt;VT-D&lt;/code&gt; feature enabled inside your BIOS&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/List_of_IOMMU-supporting_hardware&#34;&gt;Your hardware must support IOMMU&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;You must have a spare GPU device.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;setup&#34; &gt;Setup
+&lt;span&gt;
+    &lt;a href=&#34;#setup&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;h3 id=&#34;isolating-the-gpu&#34; &gt;Isolating the GPU
+&lt;span&gt;
+    &lt;a href=&#34;#isolating-the-gpu&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;In this section we will isolate the graphics card from the host so that we can
+pass it through without any issues.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: This section assumes that you are going to passthrough a NVDIA GPU.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;setting-integrated-graphics-as-output&#34; &gt;Setting Integrated Graphics as Output
+&lt;span&gt;
+    &lt;a href=&#34;#setting-integrated-graphics-as-output&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;blockquote&gt;
+&lt;p&gt;Note: This section is only valid if you only have only one &lt;strong&gt;GPU&lt;/strong&gt; and one
+&lt;strong&gt;iGPU&lt;/strong&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In order to make it work, you will have to go to your &lt;strong&gt;BIOS&lt;/strong&gt; settings and change
+the default output display to the integrated graphics.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Caution: Be sure that you have a way to set the graphics output of your
+motherboard as the input to your monitor, otherwise you will be locked without
+graphics.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;enabling-iommu&#34; &gt;Enabling IOMMU
+&lt;span&gt;
+    &lt;a href=&#34;#enabling-iommu&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;p&gt;Inside your NixOS configuration, add:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;boot&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;kernelParams &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; [
+  &lt;span style=&#34;color:#75715e&#34;&gt;# https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Setting_up_IOMMU&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;intel_iommu=on&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;iommu=pt&amp;#34;&lt;/span&gt;
+
+  &lt;span style=&#34;color:#75715e&#34;&gt;# You might need this to avoid ASPM errors on boot&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pcie_aspm=off&amp;#34;&lt;/span&gt;
+];
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then rebuild and reboot your system.&lt;/p&gt;
+&lt;h4 id=&#34;identifying-iommu-devices&#34; &gt;Identifying IOMMU Devices
+&lt;span&gt;
+    &lt;a href=&#34;#identifying-iommu-devices&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;p&gt;You can use the following snippet to identify your IOMMU devices:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;shopt -s nullglob
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; d in /sys/kernel/iommu_groups/*/devices/*; &lt;span style=&#34;color:#66d9ef&#34;&gt;do&lt;/span&gt;
+    n&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;d#*/iommu_groups/*&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;; n&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;n%%/*&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+    printf &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;IOMMU Group %s &amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$n&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+    lspci -nns &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;d##*/&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;Note: This script requires the &lt;code&gt;lspci&lt;/code&gt; binary, available on Nix via the
+&lt;code&gt;pciutils&lt;/code&gt; package.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This will be useful to get the ID of the graphics card in the next section.
+Output example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;❯ list-iommu-devices  | grep GTX
+IOMMU Group &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; 01:00.0 VGA compatible controller &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;0300&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;: NVIDIA Corporation GP104 &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;GeForce GTX 1070&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;10de:1b81&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;rev a1&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;configuring-the-nixos-host&#34; &gt;Configuring the NixOS Host
+&lt;span&gt;
+    &lt;a href=&#34;#configuring-the-nixos-host&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;p&gt;Add the following to your NixOS configuration:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Enable VFIO and KVM kernel modules&lt;/span&gt;
+boot&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;kernelModules &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; [
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kvm-intel&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# If using an AMD processor, use `kvm-amd`&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio_pci&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio_iommu_type1&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio_virqfd&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio&amp;#34;&lt;/span&gt;
+];
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# We blacklist NVIDIA drivers from the kernel modules, ensuring the GPU&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;# doesn&amp;#39;t get loaded.&lt;/span&gt;
+boot&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;blacklistedKernelModules &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; [
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nvidia&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nouveau&amp;#34;&lt;/span&gt;
+];
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Change the id below after `ids=` to the same of your GPU id&lt;/span&gt;
+boot&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;extraModprobeConfig &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;options vfio-pci ids=10de:1b81&amp;#34;&lt;/span&gt;;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# This might be necessary for you&lt;/span&gt;
+boot&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;postBootCommands &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  DEVS=&amp;#34;0000:0f:00.0 0000:0f:00.1&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  for DEV in $DEVS; do
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    echo &amp;#34;vfio-pci&amp;#34; &amp;gt; /sys/bus/pci/devices/$DEV/driver_override
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  done
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  modprobe -i vfio-pci
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now rebuild your configuration and reboot. You can test that the configuration
+worked by running the following:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;❯ dmesg | grep -i vfio
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;    2.382403&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; VFIO - User Level meta-driver version: 0.3
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;    2.391945&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; vfio-pci 0000:01:00.0: vgaarb: changed VGA decodes: olddecodes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;io+mem,decodes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;io+mem:owns&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;none
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;    2.403383&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; vfio_pci: add &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;10de:1b81&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;ffffffff:ffffffff&lt;span style=&#34;color:#f92672&#34;&gt;]]&lt;/span&gt; class 0x000000/00000000
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;    2.798115&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; vfio-pci 0000:01:00.0: vgaarb: changed VGA decodes: olddecodes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;io+mem,decodes&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;io+mem:owns&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;none
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;  552.633505&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; vfio-pci 0000:01:00.0: enabling device &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0000&lt;/span&gt; -&amp;gt; 0003&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;  552.633809&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; vfio-pci 0000:01:00.0: vfio_ecap_init: hiding ecap 0x19@0x900
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt; 1034.204707&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; vfio-pci 0000:01:00.0: vfio_ecap_init: hiding ecap 0x19@0x900
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The output should be similar to this (note the &lt;code&gt;add [10de:1b81...&lt;/code&gt; line).&lt;/p&gt;
+&lt;h3 id=&#34;installing-the-guest-os&#34; &gt;Installing the Guest OS
+&lt;span&gt;
+    &lt;a href=&#34;#installing-the-guest-os&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;h4 id=&#34;nixos-virtualization-setup&#34; &gt;NixOS Virtualization Setup
+&lt;span&gt;
+    &lt;a href=&#34;#nixos-virtualization-setup&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;virtualisation&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;libvirtd &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; {
+  enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+  onBoot &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ignore&amp;#34;&lt;/span&gt;;
+  onShutdown &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;shutdown&amp;#34;&lt;/span&gt;;
+  qemu &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    ovmf&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+    runAsRoot &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;;
+  };
+};
+
+environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;systemPackages &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; pkgs; [
+  virt-manager
+];
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;installation&#34; &gt;Installation
+&lt;span&gt;
+    &lt;a href=&#34;#installation&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;blockquote&gt;
+&lt;p&gt;This part assumes you are going to install Windows inside the box.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Download the Windows ISO of your liking (This post was tested using Windows 10).&lt;/li&gt;
+&lt;li&gt;Move the ISO to &lt;code&gt;/var/lib/libvirt/images&lt;/code&gt; so that we don&amp;rsquo;t get permission
+errors when launching the VM.&lt;/li&gt;
+&lt;li&gt;Open the &lt;code&gt;virt-manager&lt;/code&gt; program.&lt;/li&gt;
+&lt;li&gt;Create the VM normally until the Wizard asks you to set the guest name, then
+check &lt;strong&gt;Customize before install&lt;/strong&gt; and proceed.&lt;/li&gt;
+&lt;li&gt;Inside the &lt;strong&gt;Overview&lt;/strong&gt; section, change firmware to &lt;strong&gt;UEFI&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;Inside the &lt;strong&gt;CPUs&lt;/strong&gt; section, change the CPU model to &lt;strong&gt;host-passthrough&lt;/strong&gt; (if it&amp;rsquo;s
+not being shown uncheck &lt;strong&gt;Copy host CPU configuration&lt;/strong&gt;).&lt;/li&gt;
+&lt;li&gt;Don&amp;rsquo;t add the PCI device yet, just start the Windows ISO and install it
+through the &lt;code&gt;virt-viewer&lt;/code&gt; screen.&lt;/li&gt;
+&lt;li&gt;After a successful installation, shut down the box and proceed.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: If you fall inside an &amp;ldquo;UEFI Shell&amp;rdquo; when starting the VM for
+installation, just type exit, navigate to &lt;strong&gt;Boot Manager&lt;/strong&gt; and boot into the
+desired device.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;pci-passthrough&#34; &gt;PCI Passthrough
+&lt;span&gt;
+    &lt;a href=&#34;#pci-passthrough&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Remove these virtual device sections in box&amp;rsquo;s the XML config:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;channel&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;spicevmc&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  ...
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/channel&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tablet&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;bus=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;usb&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  ...
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/input&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;mouse&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;bus=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps2&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;keyboard&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;bus=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ps2&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;graphics&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;spice&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;autoport=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;yes&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  ...
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/graphics&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;video&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;model&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;qxl&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;...&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+  ...
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Add this to avoid virtualization detection:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;features&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;hyperv&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;vendor_id&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;state=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;on&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;value=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;randomid&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/hyperv&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/features&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;features&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;kvm&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;hidden&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;state=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;on&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/kvm&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/features&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Depending on your card, the GPU might detect it&amp;rsquo;s being virtualized and refuse
+to run, triggering an &lt;code&gt;error 43&lt;/code&gt; (device unidentifiable) and leading to a
+boring black screen. These snippets help to avoid this problem.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In the box&amp;rsquo;s details, click &lt;strong&gt;Add Hardware&lt;/strong&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Add all the devices that are in the same &lt;a href=&#34;#enabling-iommu&#34;&gt;&lt;strong&gt;IOMMU&lt;/strong&gt;&lt;/a&gt; group of your GPU.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;You should now be able to start your box and change your monitor input to the
+GPU output to check if it&amp;rsquo;s working. You should see your Windows box normally
+on your screen.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;keyboardmouse-support&#34; &gt;Keyboard/Mouse support
+&lt;span&gt;
+    &lt;a href=&#34;#keyboardmouse-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;Add to your box configuration, inside the &lt;code&gt;&amp;lt;devices&amp;gt;&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;evdev&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;source&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;dev=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/dev/input/by-id/your-mouse-here&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/input&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;evdev&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;source&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;dev=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/dev/input/by-id/your-keyboard-here&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;grab=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;all&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;repeat=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;on&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/input&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;mouse&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;bus=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;virtio&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;keyboard&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;bus=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;virtio&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;tips&#34; &gt;Tips
+&lt;span&gt;
+    &lt;a href=&#34;#tips&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;The devices must have &amp;ldquo;event&amp;rdquo; in their name.&lt;/li&gt;
+&lt;li&gt;To check whether a device is the correct, &lt;code&gt;cat&lt;/code&gt; it and use the device, you
+should see some gibberish being printed into the shell that &lt;code&gt;cat&lt;/code&gt; is
+running.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;After setting this up, you should now be able to boot your VM and use your
+keyboard and mouse inside it. In order to swap the keyboard and mouse between
+host and the guest, press both &lt;strong&gt;left control&lt;/strong&gt; and &lt;strong&gt;right control&lt;/strong&gt; at the
+same time.&lt;/p&gt;
+&lt;h3 id=&#34;ivshmem-support&#34; &gt;IVSHMEM Support
+&lt;span&gt;
+    &lt;a href=&#34;#ivshmem-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;Note: This section is only useful if you are going to use either &lt;a href=&#34;#scream--ivshmem&#34;&gt;Scream with IVSHMEM&lt;/a&gt; or &lt;a href=&#34;#looking-glass&#34;&gt;Looking Glass&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Inside your Windows box&amp;rsquo;s &lt;strong&gt;Device Manager&lt;/strong&gt;, go to &lt;strong&gt;System Devices&lt;/strong&gt; and select &lt;strong&gt;PCI standard RAM Controller&lt;/strong&gt;, then update it with &lt;a href=&#34;https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/upstream-virtio/&#34;&gt;RedHat&amp;rsquo;s IVSHMEM drivers&lt;/a&gt; (preferentially v0.1-161+).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;kmonad-support&#34; &gt;KMonad Support
+&lt;span&gt;
+    &lt;a href=&#34;#kmonad-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;If you are using [[Elegant remappings with KMonad | KMonad]], you will notice
+that it grabs your keyboard&amp;rsquo;s &lt;code&gt;udev&lt;/code&gt; device and it won&amp;rsquo;t output anything while
+KMonad is actively using this keyboard. We can work around this by symlinking
+the output device that KMonad creates into a known name that we can pass to our
+VM.&lt;/p&gt;
+&lt;p&gt;Inside my KMonad configuration, I have this relevant line:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;output&lt;/span&gt; (&lt;span style=&#34;color:#a6e22e&#34;&gt;uinput&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;sink&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;KMonad output&amp;#34;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This sets the name of the &lt;code&gt;udev&lt;/code&gt; device that KMonad creates. Having this
+information, we can write an &lt;code&gt;udev&lt;/code&gt; rule that detects and symlinks this device
+to a known path:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;udev&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;extraRules &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  # Symlink KMonad device
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  ACTION==&amp;#34;add&amp;#34;, ATTRS{name}==&amp;#34;KMonad output&amp;#34;, SYMLINK+=&amp;#34;KMONAD_DEVICE&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now that we have the symbolic link &lt;code&gt;/dev/KMONAD_DEVICE&lt;/code&gt;, which points to the dynamic
+input that KMonad created we can provide it inside the VM&amp;rsquo;s XML file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;input&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;evdev&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;source&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;dev=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/dev/KMONAD_DEVICE&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;grab=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;all&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;repeat=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;on&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/input&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;audio-support&#34; &gt;Audio Support
+&lt;span&gt;
+    &lt;a href=&#34;#audio-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;At this point you should already have a working Windows box which can see and
+use your GPU, but it probably doesn&amp;rsquo;t have any sound output.&lt;/p&gt;
+&lt;h4 id=&#34;scream--bridged-network&#34; &gt;Scream + Bridged Network
+&lt;span&gt;
+    &lt;a href=&#34;#scream--bridged-network&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;h5 id=&#34;host-setup&#34; &gt;Host Setup
+&lt;span&gt;
+    &lt;a href=&#34;#host-setup&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;Set the network device to &lt;strong&gt;Bridge Device&lt;/strong&gt; and &lt;strong&gt;Device name&lt;/strong&gt; to your
+virtual bridge, usually &lt;strong&gt;virbr0&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;Inside your NixOS configuration, add:
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;systemd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scream-network &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; {
+  enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+  description &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Scream network&amp;#34;&lt;/span&gt;;
+  serviceConfig &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    ExecStart &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;pkgs&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scream&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;/bin/scream -o pulse -i virbr0&amp;#34;&lt;/span&gt;;
+    Restart &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;always&amp;#34;&lt;/span&gt;;
+  };
+  wantedBy &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;default.target&amp;#34;&lt;/span&gt; ];
+  requires &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pipewire.service&amp;#34;&lt;/span&gt; ]; &lt;span style=&#34;color:#75715e&#34;&gt;# Change to pulseaudio.service if using it&lt;/span&gt;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then rebuild your system.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id=&#34;guest-setup&#34; &gt;Guest Setup
+&lt;span&gt;
+    &lt;a href=&#34;#guest-setup&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;Download and install &lt;a href=&#34;https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/#virtio-win-direct-downloads&#34;&gt;VirtIO drivers&lt;/a&gt; (&lt;a href=&#34;https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md&#34;&gt;virtio-win-iso&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;Download and Install &lt;a href=&#34;https://github.com/duncanthrax/scream/releases/&#34;&gt;Scream&lt;/a&gt;.
+&lt;blockquote&gt;
+&lt;p&gt;Note: If you previously had setup &lt;a href=&#34;#scream--ivshmem&#34;&gt;Scream with IVSHMEM&lt;/a&gt;,
+remember to remove the registry entry that makes Scream use IVSHMEM.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You should now be able to hear the guest&amp;rsquo;s audio on your host.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: For some reason, even though the &lt;code&gt;scream-network&lt;/code&gt; unit is running, the
+box doesn&amp;rsquo;t output any sound until I restart the unit.
+If that also happens to you, you can do so with: &lt;code&gt;systemctl --user restart scream-network.service&lt;/code&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;h4 id=&#34;scream--ivshmem&#34; &gt;Scream + IVSHMEM
+&lt;span&gt;
+    &lt;a href=&#34;#scream--ivshmem&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;blockquote&gt;
+&lt;p&gt;Note: Setting up Scream with &lt;strong&gt;IVSHMEM&lt;/strong&gt; is not the preferred way of doing it,
+and probably will have more disadvantages than advantages.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h5 id=&#34;host-setup-1&#34; &gt;Host Setup
+&lt;span&gt;
+    &lt;a href=&#34;#host-setup-1&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;Add the following to your NixOS configuration and rebuild it:
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# Pipewire + pulseaudio support (you can also use just pulseaudio)&lt;/span&gt;
+ services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pipewire &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; {
+   enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+   pulse&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+ };
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Scream&lt;/span&gt;
+systemd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tmpfiles&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;rules &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; [
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;f /dev/shm/scream 0660 YOUR-USERNAME-HERE qemu-libvirtd -&amp;#34;&lt;/span&gt;
+];
+
+systemd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scream-ivshmem &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; {
+  enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+  description &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Scream IVSHMEM&amp;#34;&lt;/span&gt;;
+  serviceConfig &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    ExecStart &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;pkgs&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scream&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;/bin/scream -o pulse -m /dev/shm/scream&amp;#34;&lt;/span&gt;;
+    Restart &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;always&amp;#34;&lt;/span&gt;;
+  };
+  wantedBy &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;default.target&amp;#34;&lt;/span&gt; ];
+  requires &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pipewire.service&amp;#34;&lt;/span&gt; ]; &lt;span style=&#34;color:#75715e&#34;&gt;# Change to pulseaudio.service if using it&lt;/span&gt;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Add Scream&amp;rsquo;s IVSHMEM configuration inside the &lt;code&gt;&amp;lt;devices&amp;gt;&lt;/code&gt; section in the XML
+config:
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;shmem&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;scream&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;model&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ivshmem-plain&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;size&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;unit=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;M&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;2&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/size&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;address&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pci&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;domain=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0x0000&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;bus=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0x00&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;slot=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0x11&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0x0&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/shmem&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;guest-setup-1&#34; &gt;Guest Setup
+&lt;span&gt;
+    &lt;a href=&#34;#guest-setup-1&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#ivshmem-support&#34;&gt;Add IVSHMEM support&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Download and Install &lt;a href=&#34;https://github.com/duncanthrax/scream/releases&#34;&gt;Scream Drivers&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;To make the driver use &lt;strong&gt;IVSHMEM&lt;/strong&gt;, run from an elevated shell: &lt;code&gt;REG ADD HKLM\SYSTEM\CurrentControlSet\Services\Scream\Options /v UseIVSHMEM /t REG_DWORD /d 2&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: If your box&amp;rsquo;s sound doesn&amp;rsquo;t work and the &lt;code&gt;scream-ivshmem&lt;/code&gt; unit is running,
+check the note in end of the &lt;a href=&#34;#scream--bridged-network&#34;&gt;Scream + Bridged Network&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;You should now be able to hear the guest&amp;rsquo;s audio on your host.&lt;/p&gt;
+&lt;h3 id=&#34;video-support&#34; &gt;Video support
+&lt;span&gt;
+    &lt;a href=&#34;#video-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;h4 id=&#34;looking-glass&#34; &gt;Looking Glass
+&lt;span&gt;
+    &lt;a href=&#34;#looking-glass&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h4&gt;&lt;p&gt;Looking Glass enables us to view our box graphical output from our XServer
+session.&lt;/p&gt;
+&lt;h5 id=&#34;host-setup-2&#34; &gt;Host Setup
+&lt;span&gt;
+    &lt;a href=&#34;#host-setup-2&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Add this to your NixOS configuration:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;systemd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tmpfiles&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;rules &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; [
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;f /dev/shm/looking-glass 0660 YOUR-USERNAME-HERE qemu-libvirtd -&amp;#34;&lt;/span&gt;
+];
+
+environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;systemPackages &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; pkgs; [
+  looking-glass-client
+];
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then rebuild your NixOS configuration and reboot the system.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Add Looking Glass&#39; required configuration inside the &lt;code&gt;&amp;lt;devices&amp;gt;&lt;/code&gt; section in the box&amp;rsquo;s XML:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;!--
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;You only need to add `&amp;lt;graphics&amp;gt;` and `&amp;lt;video&amp;gt;` if you are going to use the
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;spice server.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;If you prefer swapping your keyboard and mouse between your host and the VM, 
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;just don&amp;#39;t add these two properties and launch `looking-glass-client` with the 
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;`-s no` flag.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;--&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;graphics&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;spice&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;autoport=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;yes&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;listen&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;address&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/graphics&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;video&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;model&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;none&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/video&amp;gt;&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;!-- Required --&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;shmem&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;looking-glass&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;model&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;type=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;ivshmem-plain&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;size&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;unit=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;M&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;32&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/size&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/shmem&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;See &lt;a href=&#34;https://looking-glass.io/docs/stable/install/#determining-memory&#34;&gt;Looking Glass&#39; documentation&lt;/a&gt; in order to calculate how much memory you should give to Looking Glass (although 32M should handle most of the cases).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id=&#34;guest-setup-2&#34; &gt;Guest Setup
+&lt;span&gt;
+    &lt;a href=&#34;#guest-setup-2&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h5&gt;&lt;p&gt;Inside your Windows box, you will need to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#ivshmem-support&#34;&gt;Add IVSHMEM support&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://looking-glass.io/downloads&#34;&gt;Download and install &lt;code&gt;Looking Glass (host)&lt;/code&gt;&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You should now be able to run something like &lt;code&gt;looking-glass-client -s no -F -f /dev/shm/looking-glass&lt;/code&gt; on your host and see your guest graphical output.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: The version of both your Looking Glass client and host applications must match.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;usb-support&#34; &gt;USB Support
+&lt;span&gt;
+    &lt;a href=&#34;#usb-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;If you need to use your USBs to wire up say a pendrive or an external HD, you
+can easily plug them into your PC and pass them to your guest through the &lt;strong&gt;Add
+Hardware&lt;/strong&gt; button inside the box&amp;rsquo;s details.&lt;/p&gt;
+&lt;h3 id=&#34;partition-support&#34; &gt;Partition Support
+&lt;span&gt;
+    &lt;a href=&#34;#partition-support&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;To passthorugh native partitions, create them on your host, then inside the &lt;strong&gt;Add
+Hardware&lt;/strong&gt; menu, select &lt;strong&gt;Storage&lt;/strong&gt;, uncheck &lt;strong&gt;Create a disk image for the
+virtual machine&lt;/strong&gt;, check &lt;strong&gt;Select or create custom storage&lt;/strong&gt; and add the path do
+your partition inside the input (e.g: &lt;code&gt;/dev/sdb2&lt;/code&gt;).&lt;/p&gt;
+&lt;h2 id=&#34;performance-improvements&#34; &gt;Performance Improvements
+&lt;span&gt;
+    &lt;a href=&#34;#performance-improvements&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;h3 id=&#34;changing-number-of-cpu-cores&#34; &gt;Changing number of CPU cores
+&lt;span&gt;
+    &lt;a href=&#34;#changing-number-of-cpu-cores&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;I&amp;rsquo;ve initially had some trouble with poor CPU performance, In order to improve
+it I went into the &lt;strong&gt;CPUs&lt;/strong&gt; section inside the box&amp;rsquo;s details and checked
+&lt;strong&gt;Manually set CPU topology&lt;/strong&gt;, from here you can increase the number of real
+cores working with the VM.&lt;/p&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;h2 id=&#34;conclusion&#34; &gt;Conclusion
+&lt;span&gt;
+    &lt;a href=&#34;#conclusion&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;While tinkering with and learning more about &lt;code&gt;VFIO&lt;/code&gt; and &lt;code&gt;QEMU&lt;/code&gt;/&lt;code&gt;libvirt&lt;/code&gt;, I&amp;rsquo;ve
+managed to find an interesting virtual machine workflow:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Audio: Scream + Bridged Network.&lt;/li&gt;
+&lt;li&gt;Video: I&amp;rsquo;m using both the native GPU&amp;rsquo;s output and Looking Glass, depending on what
+I&amp;rsquo;m doing.&lt;/li&gt;
+&lt;li&gt;Inputs: I&amp;rsquo;m using both my keyboard and mouse as &lt;code&gt;evdev&lt;/code&gt; inputs, so I can swap
+between the bare metal and the virtual machine. I&amp;rsquo;m also using KMonad&amp;rsquo;s output
+device as my keyboard device.&lt;/li&gt;
+&lt;li&gt;Storage: I&amp;rsquo;ve installed Windows in a small QEMU virtual disk inside my SSD for
+faster initialization and added another QEMU virtual storage (which is inside
+my HD) for storing data.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The experience has been much greater than dual boot, since I can just open
+Looking Glass and use Windows as if it were just another workspace in my window
+manager. Now I can use both the OSses at the same time and don&amp;rsquo;t need to waste time
+waiting for system reboots.&lt;/p&gt;
+&lt;p&gt;I hope this post to be useful for whoever want to try a &lt;strong&gt;virtual machine + GPU
+passthrough&lt;/strong&gt; workflow, be it another reader or myself trying to setup it again
+after formatting the computer.&lt;/p&gt;
+&lt;p&gt;This is how my final NixOS configuration looks like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;{ pkgs&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;...&lt;/span&gt; }:
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;let&lt;/span&gt;
+  username &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vini&amp;#34;&lt;/span&gt;;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;in&lt;/span&gt;
+{
+  boot &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    kernelParams &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+      &lt;span style=&#34;color:#75715e&#34;&gt;# https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Setting_up_IOMMU&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;intel_iommu=on&amp;#34;&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;iommu=pt&amp;#34;&lt;/span&gt;
+
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pcie_aspm=off&amp;#34;&lt;/span&gt;
+    ];
+
+    kernelModules &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kvm-intel&amp;#34;&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio_pci&amp;#34;&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio_iommu_type1&amp;#34;&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio_virqfd&amp;#34;&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vfio&amp;#34;&lt;/span&gt;
+    ];
+
+    blacklistedKernelModules &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nvidia&amp;#34;&lt;/span&gt;
+      &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nouveau&amp;#34;&lt;/span&gt;
+    ];
+
+    extraModprobeConfig &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;options vfio-pci ids=10de:1b81&amp;#34;&lt;/span&gt;;
+
+    postBootCommands &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      DEVS=&amp;#34;0000:0f:00.0 0000:0f:00.1&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      for DEV in $DEVS; do
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        echo &amp;#34;vfio-pci&amp;#34; &amp;gt; /sys/bus/pci/devices/$DEV/driver_override
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      done
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      modprobe -i vfio-pci
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#39;&amp;#39;&lt;/span&gt;;
+  };
+
+  services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;udev&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;extraRules &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    # Symlink KMonad device
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    ACTION==&amp;#34;add&amp;#34;, ATTRS{name}==&amp;#34;KMonad output&amp;#34;, SYMLINK+=&amp;#34;KMONAD_DEVICE&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  &amp;#39;&amp;#39;&lt;/span&gt;;
+
+  services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;pipewire &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+    pulse&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+  };
+
+  systemd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;tmpfiles&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;rules &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;f /dev/shm/looking-glass 0660 &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;username&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt; qemu-libvirtd -&amp;#34;&lt;/span&gt;
+  ];
+
+  systemd&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;user&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scream-network &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+    description &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Scream network&amp;#34;&lt;/span&gt;;
+    serviceConfig &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+      ExecStart &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;pkgs&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;scream&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;/bin/scream -o pulse -i virbr0&amp;#34;&lt;/span&gt;;
+      Restart &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;always&amp;#34;&lt;/span&gt;;
+    };
+    wantedBy &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;default.target&amp;#34;&lt;/span&gt; ];
+    requires &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pipewire.service&amp;#34;&lt;/span&gt; ];
+  };
+
+  virtualisation&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;libvirtd &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+    onBoot &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ignore&amp;#34;&lt;/span&gt;;
+    onShutdown &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;shutdown&amp;#34;&lt;/span&gt;;
+    qemu &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+      ovmf&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+      runAsRoot &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;;
+    };
+  };
+
+  environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;systemPackages &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; pkgs; [
+    virt-manager
+    looking-glass-client
+  ];
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;resources&#34; &gt;Resources
+&lt;span&gt;
+    &lt;a href=&#34;#resources&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF&#34;&gt;Arch Wiki&amp;rsquo;s PCI Passthrough Article&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://alexbakker.me/post/nixos-pci-passthrough-qemu-vfio.html&#34;&gt;Notes on PCI Passthrough on NixOS using QEMU and VFIO&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/duncanthrax/scream&#34;&gt;Scream Project&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://forum.level1techs.com/t/nixos-vfio-pcie-passthrough/130916&#34;&gt;NixOS VFIO PCIe Passthrough&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://looking-glass.io/docs/stable/install/&#34;&gt;Looking Glass Setup&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://looking-glass.io/wiki/Using_Scream_over_LAN&#34;&gt;Using Scream over LAN&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://forum.level1techs.com/t/sound-while-in-looking-glass-how-to-get-it-to-work-properly-in-november-2020/163448/7&#34;&gt;Sound while in Looking Glass: How to get it working&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Hybrid Graphics with NVIDIA PRIME</title>
+      <link>https://viniciusmuller.github.io/blog/blog/hybrid_graphics_nvidia_prime/</link>
+      <pubDate>Wed, 27 Oct 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://viniciusmuller.github.io/blog/blog/hybrid_graphics_nvidia_prime/</guid>
+      <description>&lt;h1 id=&#34;intro&#34; &gt;Intro
+&lt;span&gt;
+    &lt;a href=&#34;#intro&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h1&gt;&lt;p&gt;I&amp;rsquo;ve spent some time trying to setup hybrid graphics on NixOS and managed to get
+it up and running after adapting some of the content available at the NixOS Wiki.
+This post will go through the necessary changes that I had to do in order to get
+it working.&lt;/p&gt;
+&lt;h2 id=&#34;authors-setup&#34; &gt;Author&amp;rsquo;s Setup
+&lt;span&gt;
+    &lt;a href=&#34;#authors-setup&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;The relevant setup for this post includes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OS: &lt;code&gt;NixOS 21.11 Porcupine&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;CPU: &lt;code&gt;Intel i7-7700&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;GPU: &lt;code&gt;NVIDIA GTX 1070&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;iGPU: &lt;code&gt;Intel HD Graphics 630&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: I have not tested this in other machines, maybe some changes will be
+necessary for this to run in other kinds of hardware.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;nixos-configuration&#34; &gt;NixOS Configuration
+&lt;span&gt;
+    &lt;a href=&#34;#nixos-configuration&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Below is the necessary NixOS configuration to get it up and running. The
+relevant parts will be covered next.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;let&lt;/span&gt;
+  nvidia-offload &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pkgs&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;writeShellScriptBin &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nvidia-offload&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __NV_PRIME_RENDER_OFFLOAD=1
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __VK_LAYER_NV_optimus=NVIDIA_only
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    exec -a &amp;#34;$1&amp;#34; &amp;#34;$@&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  &amp;#39;&amp;#39;&lt;/span&gt;;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;in&lt;/span&gt;
+{
+  environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;systemPackages &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+    nvidia-offload
+  ];
+
+  services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;xserver&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;config &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    # Integrated Intel GPU
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Section &amp;#34;Device&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Identifier &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Driver &amp;#34;modesetting&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    # Dedicated NVIDIA GPU
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Section &amp;#34;Device&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Identifier &amp;#34;dGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Driver &amp;#34;nvidia&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Section &amp;#34;ServerLayout&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Identifier &amp;#34;layout&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Screen 0 &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Section &amp;#34;Screen&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Identifier &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;      Device &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  &amp;#39;&amp;#39;&lt;/span&gt;;
+
+  services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;xserver&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;videoDrivers &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nvidia&amp;#34;&lt;/span&gt; ];
+  hardware&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;nvidia&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;prime &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    offload&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+    intelBusId &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;PCI:0:2:0&amp;#34;&lt;/span&gt;;
+    nvidiaBusId &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;PCI:1:0:0&amp;#34;&lt;/span&gt;;
+  };
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;offload-script&#34; &gt;Offload Script
+&lt;span&gt;
+    &lt;a href=&#34;#offload-script&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;let&lt;/span&gt;
+  nvidia-offload &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pkgs&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;writeShellScriptBin &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nvidia-offload&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __NV_PRIME_RENDER_OFFLOAD=1
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    export __VK_LAYER_NV_optimus=NVIDIA_only
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    exec -a &amp;#34;$1&amp;#34; &amp;#34;$@&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  &amp;#39;&amp;#39;&lt;/span&gt;;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;in&lt;/span&gt;
+{
+  environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;systemPackages &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+    nvidia-offload
+  ];
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This defines a small helper script that you will be using when you want to launch a program using the dedicated GPU.&lt;/p&gt;
+&lt;h3 id=&#34;examples&#34; &gt;Examples
+&lt;span&gt;
+    &lt;a href=&#34;#examples&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Launching glxgears using the integrated GPU: &lt;code&gt;glxgears&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Launching glxgears using the dedicated GPU: &lt;code&gt;nvidia-offload glxgears&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Extra: Launch Steam games using the GPU:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go at the game properties inside the Steam client&lt;/li&gt;
+&lt;li&gt;Find &lt;code&gt;Launch Options&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If it&amp;rsquo;s empty, change it to &lt;code&gt;nvidia-offload %command%&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;xserver-configuration&#34; &gt;XServer Configuration
+&lt;span&gt;
+    &lt;a href=&#34;#xserver-configuration&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;xserver&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;config &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  # Integrated Intel GPU
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  Section &amp;#34;Device&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Identifier &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Driver &amp;#34;modesetting&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  # Dedicated NVIDIA GPU
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  Section &amp;#34;Device&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Identifier &amp;#34;dGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Driver &amp;#34;nvidia&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  Section &amp;#34;ServerLayout&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Identifier &amp;#34;layout&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Screen 0 &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  Section &amp;#34;Screen&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Identifier &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    Device &amp;#34;iGPU&amp;#34;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  EndSection
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This was necessary for me because the XServer was not recognizing
+my graphics card, adding this extra piece of configuration solved it.&lt;/p&gt;
+&lt;h2 id=&#34;nvidia--prime-configuration&#34; &gt;NVIDIA + PRIME Configuration
+&lt;span&gt;
+    &lt;a href=&#34;#nvidia--prime-configuration&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;xserver&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;videoDrivers &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nvidia&amp;#34;&lt;/span&gt; ];
+
+hardware&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;nvidia&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;prime &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;=&lt;/span&gt; {
+  offload&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+  intelBusId &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;PCI:0:2:0&amp;#34;&lt;/span&gt;;
+  nvidiaBusId &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;PCI:1:0:0&amp;#34;&lt;/span&gt;;
+};
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The first line here enables the &lt;strong&gt;proprietary NVIDIA drivers&lt;/strong&gt; in our system, this
+line is very important, otherwise it will not work.&lt;/p&gt;
+&lt;p&gt;Below is the NVIDIA PRIME configuration, in which we must enable &lt;code&gt;offload&lt;/code&gt; and
+the both the &lt;code&gt;nvidiaBusId&lt;/code&gt; and &lt;code&gt;intelBusId&lt;/code&gt; of our GPUs. You can find out how to
+get the bus ids by reading this &lt;a href=&#34;https://nixos.wiki/wiki/Nvidia#lspci&#34;&gt;relevant part of the NixOS Wiki&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: In my system, I had to go to my BIOS settings and change the default
+display output to &lt;code&gt;IGFX&lt;/code&gt; (Integrated Graphics) instead of directly using the
+PCIE slot, otherwise my system wouldn&amp;rsquo;t detect the Intel HD device.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;conclusion&#34; &gt;Conclusion
+&lt;span&gt;
+    &lt;a href=&#34;#conclusion&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h1&gt;&lt;p&gt;After some tries I could get hybrid graphics working on NixOS in a quite easy
+and reproducible way. This is a writeup meant to help other people with the same
+issue and remember myself about it if I ever need to change it again.&lt;/p&gt;
+&lt;h1 id=&#34;resources&#34; &gt;Resources
+&lt;span&gt;
+    &lt;a href=&#34;#resources&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://nixos.wiki/wiki/Nvidia&#34;&gt;NixOS Wiki&amp;rsquo;s NVIDIA page&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://download.nvidia.com/XFree86/Linux-x86_64/435.17/README/primerenderoffload.html&#34;&gt;NVIDIA&amp;rsquo;s PRIME Offloading&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Elegant Remappings With KMonad</title>
+      <link>https://viniciusmuller.github.io/blog/blog/kmonad_remappings/</link>
+      <pubDate>Tue, 26 Oct 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://viniciusmuller.github.io/blog/blog/kmonad_remappings/</guid>
+      <description>&lt;h2 id=&#34;intro&#34; &gt;Intro
+&lt;span&gt;
+    &lt;a href=&#34;#intro&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;I&amp;rsquo;ve already had a lot of headaches trying to remap keys on Linux/NixOS. After
+failing to achieve my goals with &lt;code&gt;xmodmap&lt;/code&gt; and others, I was sure there had to
+be a better solution, and then I&amp;rsquo;ve found KMonad.&lt;/p&gt;
+&lt;h2 id=&#34;what-is-kmonad&#34; &gt;What is KMonad?
+&lt;span&gt;
+    &lt;a href=&#34;#what-is-kmonad&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;KMonad is a multiplatform key remapping software which uses a lisp-like
+declarative configuration language.&lt;/p&gt;
+&lt;h2 id=&#34;why-use-kmonad&#34; &gt;Why use KMonad?
+&lt;span&gt;
+    &lt;a href=&#34;#why-use-kmonad&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Once you get used to it, KMonad provides a pretty stable experience and a sweet
+way to configure your key remappings.&lt;/p&gt;
+&lt;h3 id=&#34;pros&#34; &gt;Pros
+&lt;span&gt;
+    &lt;a href=&#34;#pros&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;It works in a system-wide manner, so it doesn&amp;rsquo;t matter whether you are inside
+a TTY rescuing your computer or relaxing inside your X session, your
+key remappings will work.&lt;/li&gt;
+&lt;li&gt;It&amp;rsquo;s pretty easy to define configurations for multiple keyboards and switch
+between them.&lt;/li&gt;
+&lt;li&gt;It works. Seriously. I cannot stress this enough, I&amp;rsquo;ve spent a lot of time
+using programs to detect the keycodes that my keyboard was emitting and
+writing some cryptic commands inside &lt;code&gt;xmodmap&lt;/code&gt;&amp;rsquo;s &lt;code&gt;.xkb&lt;/code&gt; files (and guess what,
+it didn&amp;rsquo;t worked). With KMonad I literally draw my keyboard in ASCII
+and change the characters&#39; placement. And it works.&lt;/li&gt;
+&lt;li&gt;It supports some fancy stuff such as macros, layers, composite characters, the
+ability to run shell commands when pressing a key, etc&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;cons&#34; &gt;Cons
+&lt;span&gt;
+    &lt;a href=&#34;#cons&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;It has a steep learning curve, and you probably will need to read their ~1000
+lines lisp-like file tutorial to start using it.&lt;/li&gt;
+&lt;li&gt;You still need to change a few lines in your configuration files in order to
+make them run in another platform.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;using-kmonad-with-nixos&#34; &gt;Using KMonad with NixOS
+&lt;span&gt;
+    &lt;a href=&#34;#using-kmonad-with-nixos&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;p&gt;Since KMonad is still not available directly into NixOS as a system module, the
+current way to use KMonad is through &lt;a href=&#34;https://github.com/kmonad/kmonad/blob/master/doc/installation.md#nixos&#34;&gt;their own NixOS module&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;the-nix-derivation&#34; &gt;The Nix Derivation
+&lt;span&gt;
+    &lt;a href=&#34;#the-nix-derivation&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;With these settings, KMonad should already start along with your NixOS system.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nix&#34; data-lang=&#34;nix&#34;&gt;{ pkgs&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;...&lt;/span&gt; }:
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;let&lt;/span&gt;
+  &lt;span style=&#34;color:#75715e&#34;&gt;# The KMonad derivation (binary)&lt;/span&gt;
+  kmonad &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;../../pkgs/kmonad/derivation.nix&lt;/span&gt;) pkgs;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;in&lt;/span&gt;
+{
+  imports &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
+    &lt;span style=&#34;color:#75715e&#34;&gt;# The KMonad NixOS module&lt;/span&gt;
+    &lt;span style=&#34;color:#e6db74&#34;&gt;./kmonad.nix&lt;/span&gt;
+  ];
+
+  services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;kmonad &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    enable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;;
+    configfiles &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;../../pkgs/kmonad/configs/ck61.kbd&lt;/span&gt; ];
+    package &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; kmonad;
+  };
+
+  services&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;xserver &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    xkbOptions &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;compose:ralt&amp;#34;&lt;/span&gt;;
+    layout &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;us&amp;#34;&lt;/span&gt;;
+  };
+
+  users&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;extraUsers&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;your_username &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {
+    extraGroups &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [ &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;input&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;uinput&amp;#34;&lt;/span&gt; ];
+  };
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For more details about this Nix snippet, check the KMonad section about Nix and
+the docs of their NixOS module.&lt;/p&gt;
+&lt;h3 id=&#34;the-kmonad-config&#34; &gt;The KMonad Config
+&lt;span&gt;
+    &lt;a href=&#34;#the-kmonad-config&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h3&gt;&lt;p&gt;My current keyboard is a &lt;code&gt;Motospeed CK61&lt;/code&gt;. It has a pretty good quality, but a
+terrible usability. It has a confusing layer system, which kills any possibility
+of using the arrow keys, some miscellaneous keys (home, end, page up, etc&amp;hellip;),
+or &lt;code&gt;F1-F12&lt;/code&gt; keys quickly. Also, it doesn&amp;rsquo;t have the tilde (yes, you&amp;rsquo;ve read that
+right, there is not way to make a beautiful &lt;code&gt;~&lt;/code&gt; by pressing a key). I mostly use
+KMonad to fix these keyboard quirks, this is a relevant part of my current configuration:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-lisp&#34; data-lang=&#34;lisp&#34;&gt;(defsrc
+  esc  &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;    &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;-&lt;/span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;=&lt;/span&gt;    bspc
+  tab  q    w    e    r    &lt;span style=&#34;color:#66d9ef&#34;&gt;t&lt;/span&gt;    y    u    i    o    p    [    ]    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;\&lt;/span&gt;
+  caps a    s    d    f    g    h    j    k    l    &lt;span style=&#34;color:#75715e&#34;&gt;;    &amp;#39;    ret&lt;/span&gt;
+  lsft z    x    c    v    b    n    m    &lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;/&lt;/span&gt;    rsft
+  lctl lmet lalt           spc            ralt cmp  rctl
+)
+
+(deflayer base
+  grv   _    _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _    _    _
+  esc   _    _    _    _    _    _    _    _    _    _    _    _
+  _     _    _    _    _    _    _    _    _    _    _    _
+  lmet  lctl _              _              lalt rctl @ext
+)
+
+(deflayer extra
+  _    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  _
+  _    _    up   _    _    _    _    _    _    _    _    ssrq @pau _
+  _    left down rght _    _    _    _    ins  home pgup pgdn _
+  _    _    _    _    _    _    _    _    del  end  _    @mat
+  _    _    _              _              _    _    @bas
+)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see how I use it to create a new layer to make arrows and others usable,
+turn &lt;code&gt;right-alt&lt;/code&gt; into &lt;code&gt;left-alt&lt;/code&gt; (&lt;code&gt;ralt&lt;/code&gt; does not behave correctly when using
+the &lt;code&gt;us(intl)&lt;/code&gt; layout), change &lt;code&gt;ctrl&lt;/code&gt; keys position, turn &lt;code&gt;caps lock&lt;/code&gt; into &lt;code&gt;esc&lt;/code&gt;
+and add the tilde (grv) in place of the original &lt;code&gt;esc&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;resources&#34; &gt;Resources
+&lt;span&gt;
+    &lt;a href=&#34;#resources&#34;&gt;
+        &lt;svg viewBox=&#34;0 0 28 23&#34; height=&#34;100%&#34; width=&#34;19&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;&lt;path d=&#34;M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;path d=&#34;M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71&#34; fill=&#34;none&#34; stroke-linecap=&#34;round&#34; stroke-miterlimit=&#34;10&#34; stroke-width=&#34;2&#34;/&gt;&lt;/svg&gt;
+    &lt;/a&gt;
+&lt;/span&gt;
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kmonad/kmonad&#34;&gt;KMonad&amp;rsquo;s GitHub Page&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kmonad/kmonad/blob/master/keymap/tutorial.kbd&#34;&gt;KMonad&amp;rsquo;s Tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/arcticlimer/dotfiles/blob/nixos/pkgs/kmonad/configs/ck61.kbd&#34;&gt;My KMonad configuration&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

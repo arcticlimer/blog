@@ -13,8 +13,8 @@
         anubis-theme = pkgs.fetchFromGitHub {
             owner = "Mitrichius";
             repo = "hugo-theme-anubis";
-            rev = "main";
-            sha256 = "sha256-ZQqmSn53b+vVhqMBtLiJmzrlAAtzPh5lnzDdG9hdksY=";
+            rev = "871cb40";
+            sha256 = "sha256-utJXw8/9YFhctQyPONqYnLP6Qm5c6cq52Czg/pl1bPQ=";
           };
       in
       rec {
@@ -28,7 +28,7 @@
           name = "personal-notes";
           src = nixpkgs.lib.cleanSource ./.;
           configurePhase = ''
-            mkdir themes
+            mkdir -p themes
             ln -s ${anubis-theme} ./themes/anubis
           '';
           buildPhase = "hugo";
